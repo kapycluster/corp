@@ -1,0 +1,9 @@
+apiVersion: kapy.kapy.sh/v1
+kind: KapyCluster
+metadata:
+  labels:
+    app.kubernetes.io/name: controller
+    app.kubernetes.io/managed-by: kustomize
+  name: kapycluster-sample
+spec:
+  # TODO(user): Add fields here
