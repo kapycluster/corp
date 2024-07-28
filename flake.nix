@@ -18,28 +18,31 @@
         let
           pkgs = nixpkgsFor.${system};
           panel = self.packages.${system}.panel;
-          files = pkgs.lib.fileset.toSource {
-            root = ./.;
-            fileset = pkgs.lib.fileset.unions [
-            ];
-          };
+          controller = self.packages.${system}.controller;
         in
         {
           panel = pkgs.buildGo122Module {
             name = "panel";
             rev = "master";
-            src = ./.;
+            src = ./panel/cmd;
 
             vendorHash = "sha256-EBVD/RzVpxNcwyVHP1c4aKpgNm4zjCz/99LvfA0Oc/Q=";
           };
           panelContainer = pkgs.dockerTools.buildLayeredImage {
             name = "ghcr.io/decantor/panel";
             tag = "latest";
-            contents = [ files ];
+            # contents = [  ];
             config = {
               Cmd = "${panel}/bin/panel";
-              ExposedPorts = { "5555/tcp" = { }; };
+              ExposedPorts = { "8080/tcp" = { }; };
             };
+          };
+
+          controller = pkgs.buildGo122Module {
+            name = "controller";
+            rev = "master";
+            src = ./controller/cmd;
+            vendorHash = "sha256-EBVD/RzVpxNcwyVHP1c4aKpgNm4zjCz/99LvfA0Oc/Q=";
           };
         });
 
