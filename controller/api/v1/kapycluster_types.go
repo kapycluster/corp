@@ -23,6 +23,8 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+const KapyClusterFinalizer = "cluster.kapy.sh/finalizer"
+
 type KapyServer struct {
 	Image       string `json:"image"`
 	Persistence string `json:"persistence"`
@@ -35,8 +37,8 @@ type KapyClusterSpec struct {
 
 // KapyClusterStatus defines the observed state of KapyCluster
 type KapyClusterStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// Ready is set when the KapyCluster is ready to serve
+	Ready bool
 }
 
 // +kubebuilder:object:root=true

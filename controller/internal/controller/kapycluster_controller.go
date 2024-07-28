@@ -18,13 +18,17 @@ package controller
 
 import (
 	"context"
+	"fmt"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	kapyv1 "github.com/decantor/corpy/controller/api/v1"
+	"github.com/decantor/corpy/controller/internal/controlplane/resources"
+	"github.com/decantor/corpy/controller/internal/scope"
 )
 
 // KapyClusterReconciler reconciles a KapyCluster object
@@ -33,9 +37,9 @@ type KapyClusterReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-// +kubebuilder:rbac:groups=kapy.kapy.sh,resources=kapyclusters,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=kapy.kapy.sh,resources=kapyclusters/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=kapy.kapy.sh,resources=kapyclusters/finalizers,verbs=update
+// +kubebuilder:rbac:groups=cluster.kapy.sh,resources=kapyclusters,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=cluster.kapy.sh,resources=kapyclusters/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=cluster.kapy.sh,resources=kapyclusters/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -47,9 +51,40 @@ type KapyClusterReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.18.2/pkg/reconcile
 func (r *KapyClusterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
+	l := log.FromContext(ctx)
 
-	// TODO(user): your logic here
+	kc := kapyv1.KapyCluster{}
+	err := r.Get(ctx, client.ObjectKey{Namespace: req.Namespace, Name: req.Name}, &kc)
+	if err != nil {
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+
+	scope := scope.NewKapyScope(&kc, r.Client)
+
+	if !kc.ObjectMeta.DeletionTimestamp.IsZero() {
+		// reconcile delete here
+	}
+
+	if !controllerutil.ContainsFinalizer(&kc, kapyv1.KapyClusterFinalizer) {
+		controllerutil.AddFinalizer(&kc, kapyv1.KapyClusterFinalizer)
+
+		err := r.Update(ctx, &kc)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+
+		l.Info("added finalizer to KapyCluster object")
+	}
+
+	if kc.Status.Ready {
+		l.Info("KapyCluster already reconciled", "name", scope.Name())
+	}
+
+	l.Info("creating service for control plane")
+	svc := resources.NewService(r.Client, scope)
+	if err := svc.Create(ctx); err != nil {
+		return ctrl.Result{}, fmt.Errorf("failed to create service for control plane %s: %w", scope.Name(), err)
+	}
 
 	return ctrl.Result{}, nil
 }
