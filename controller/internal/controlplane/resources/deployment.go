@@ -8,17 +8,16 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type Deployment struct {
 	Client client.Client
 	types.NamespacedName
-	scope *scope.KapyScope
+	scope *scope.ControlPlaneScope
 }
 
-func NewDeployment(client client.Client, scope *scope.KapyScope) *Deployment {
+func NewDeployment(client client.Client, scope *scope.ControlPlaneScope) *Deployment {
 	return &Deployment{
 		Client:         client,
 		NamespacedName: types.NamespacedName{Name: "kapy-server", Namespace: scope.Namespace()},
@@ -29,11 +28,11 @@ func NewDeployment(client client.Client, scope *scope.KapyScope) *Deployment {
 func (d *Deployment) Create(ctx context.Context) error {
 	deploy := d.deployment()
 
-	if err := d.Client.Create(ctx, deploy); err != nil {
+	if err := d.Client.Create(ctx, deploy); client.IgnoreAlreadyExists(err) != nil {
 		return err
 	}
 
-	if err := d.scope.SetControllerReference(deploy); err != nil {
+	if err := d.scope.SetControllerReference(ctx, deploy); err != nil {
 		return err
 	}
 
@@ -43,8 +42,9 @@ func (d *Deployment) Create(ctx context.Context) error {
 func (d *Deployment) deployment() *appsv1.Deployment {
 	return &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   d.Name,
-			Labels: d.scope.ServerCommonLabels(),
+			Name:      d.Name,
+			Namespace: d.Namespace,
+			Labels:    d.scope.ServerCommonLabels(),
 		},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
@@ -62,22 +62,13 @@ func (d *Deployment) deployment() *appsv1.Deployment {
 							ImagePullPolicy: corev1.PullIfNotPresent,
 							// TODO(icy): populate these
 							Command: []string{"k3s", "server"},
-							Args:    []string{"--disable-agent"},
-							LivenessProbe: &corev1.Probe{
-								FailureThreshold:    3,
-								InitialDelaySeconds: 30,
-								PeriodSeconds:       10,
-								SuccessThreshold:    1,
-								TimeoutSeconds:      60,
-								ProbeHandler: corev1.ProbeHandler{
-									HTTPGet: &corev1.HTTPGetAction{
-										Host:   "127.0.0.1",
-										Path:   "/healthz",
-										Port:   intstr.FromInt(6443),
-										Scheme: corev1.URISchemeHTTP,
-									},
-								},
+							Args: []string{
+								"--disable-agent",
+								"--disable=traefik",
+								"--disable=servicelb",
+								"--disable=metrics-server",
 							},
+							// TODO(icy): add live/readiness probes back; they need auth
 						},
 					},
 				},

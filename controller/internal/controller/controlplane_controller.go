@@ -18,14 +18,15 @@ package controller
 
 import (
 	"context"
+	"fmt"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	kapyv1 "github.com/kapycluster/corpy/controller/api/v1"
+	"github.com/kapycluster/corpy/controller/internal/controlplane"
 	"github.com/kapycluster/corpy/controller/internal/scope"
 )
 
@@ -51,34 +52,43 @@ type ControlPlaneReconciler struct {
 func (r *ControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	l := log.FromContext(ctx)
 
-	kc := kapyv1.ControlPlane{}
-	err := r.Get(ctx, client.ObjectKey{Namespace: req.Namespace, Name: req.Name}, &kc)
+	kcp := kapyv1.ControlPlane{}
+	err := r.Get(ctx, client.ObjectKey{Namespace: req.Namespace, Name: req.Name}, &kcp)
 	if err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	scope := scope.NewKapyScope(&kc, r.Client)
+	scope := scope.NewControlPlaneScope(&kcp, r.Client)
 
-	if !kc.ObjectMeta.DeletionTimestamp.IsZero() {
+	if !kcp.ObjectMeta.DeletionTimestamp.IsZero() {
 		// reconcile delete here
 	}
 
-	if !controllerutil.ContainsFinalizer(&kc, kapyv1.ControlPlaneFinalizer) {
-		controllerutil.AddFinalizer(&kc, kapyv1.ControlPlaneFinalizer)
+	// if !controllerutil.ContainsFinalizer(&kcp, kapyv1.ControlPlaneFinalizer) {
+	// 	controllerutil.AddFinalizer(&kcp, kapyv1.ControlPlaneFinalizer)
 
-		err := r.Update(ctx, &kc)
-		if err != nil {
-			return ctrl.Result{}, err
-		}
+	// 	err := r.Update(ctx, &kcp)
+	// 	if err != nil {
+	// 		return ctrl.Result{}, err
+	// 	}
 
-		l.Info("added finalizer to ControlPlane object")
-	}
+	// 	l.Info("added finalizer to ControlPlane object")
+	// }
 
-	if kc.Status.Ready {
+	if kcp.Status.Ready {
 		l.Info("ControlPlane already reconciled", "name", scope.Name())
+		return ctrl.Result{}, nil
 	}
 
 	l.Info("creating control plane", "name", scope.Name(), "namespace", scope.Namespace())
+	if err := controlplane.Create(ctx, r.Client, scope); err != nil {
+		return ctrl.Result{}, fmt.Errorf("creation failed: %w", err)
+	}
+
+	kcp.Status.Ready = true
+	if err := scope.UpdateStatus(ctx, &kcp); err != nil {
+		return ctrl.Result{}, fmt.Errorf("failed to update status: %w", err)
+	}
 
 	return ctrl.Result{}, nil
 }

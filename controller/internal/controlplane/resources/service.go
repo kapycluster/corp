@@ -14,10 +14,10 @@ import (
 type Service struct {
 	Client client.Client
 	types.NamespacedName
-	scope *scope.KapyScope
+	scope *scope.ControlPlaneScope
 }
 
-func NewService(client client.Client, scope *scope.KapyScope) *Service {
+func NewService(client client.Client, scope *scope.ControlPlaneScope) *Service {
 	return &Service{
 		Client:         client,
 		NamespacedName: types.NamespacedName{Name: "kapy-server", Namespace: scope.Namespace()},
@@ -44,12 +44,12 @@ func (s *Service) Create(ctx context.Context) error {
 		},
 	}
 
-	if err := s.Client.Create(ctx, &svc); err != client.IgnoreAlreadyExists(err) {
+	if err := s.Client.Create(ctx, &svc); client.IgnoreAlreadyExists(err) != nil {
 		return err
 	}
 
-	if err := s.scope.SetControllerReference(&svc); err != nil {
-		return nil
+	if err := s.scope.SetControllerReference(ctx, &svc); err != nil {
+		return err
 	}
 
 	return nil

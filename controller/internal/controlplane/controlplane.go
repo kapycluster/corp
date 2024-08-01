@@ -11,7 +11,7 @@ import (
 )
 
 // Create is a helper function to create a control plane
-func Create(ctx context.Context, client client.Client, scope *scope.KapyScope) error {
+func Create(ctx context.Context, client client.Client, scope *scope.ControlPlaneScope) error {
 	l := log.FromContext(ctx, "control plane", scope.Name())
 
 	l.Info("creating service for control plane")
