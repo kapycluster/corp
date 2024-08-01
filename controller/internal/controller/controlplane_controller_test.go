@@ -27,10 +27,10 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	kapyv1 "github.com/decantor/corpy/controller/api/v1"
+	kapyv1 "github.com/kapycluster/corpy/controller/api/v1"
 )
 
-var _ = Describe("KapyCluster Controller", func() {
+var _ = Describe("ControlPlane Controller", func() {
 	Context("When reconciling a resource", func() {
 		const resourceName = "test-resource"
 
@@ -40,13 +40,13 @@ var _ = Describe("KapyCluster Controller", func() {
 			Name:      resourceName,
 			Namespace: "default", // TODO(user):Modify as needed
 		}
-		kapycluster := &kapyv1.KapyCluster{}
+		controlplane := &kapyv1.ControlPlane{}
 
 		BeforeEach(func() {
-			By("creating the custom resource for the Kind KapyCluster")
-			err := k8sClient.Get(ctx, typeNamespacedName, kapycluster)
+			By("creating the custom resource for the Kind ControlPlane")
+			err := k8sClient.Get(ctx, typeNamespacedName, controlplane)
 			if err != nil && errors.IsNotFound(err) {
-				resource := &kapyv1.KapyCluster{
+				resource := &kapyv1.ControlPlane{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      resourceName,
 						Namespace: "default",
@@ -59,16 +59,16 @@ var _ = Describe("KapyCluster Controller", func() {
 
 		AfterEach(func() {
 			// TODO(user): Cleanup logic after each test, like removing the resource instance.
-			resource := &kapyv1.KapyCluster{}
+			resource := &kapyv1.ControlPlane{}
 			err := k8sClient.Get(ctx, typeNamespacedName, resource)
 			Expect(err).NotTo(HaveOccurred())
 
-			By("Cleanup the specific resource instance KapyCluster")
+			By("Cleanup the specific resource instance ControlPlane")
 			Expect(k8sClient.Delete(ctx, resource)).To(Succeed())
 		})
 		It("should successfully reconcile the resource", func() {
 			By("Reconciling the created resource")
-			controllerReconciler := &KapyClusterReconciler{
+			controllerReconciler := &ControlPlaneReconciler{
 				Client: k8sClient,
 				Scheme: k8sClient.Scheme(),
 			}

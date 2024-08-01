@@ -32,7 +32,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	kapyv1 "github.com/decantor/corpy/controller/api/v1"
+	kapyv1 "github.com/kapycluster/corpy/controller/api/v1"
 	// +kubebuilder:scaffold:imports
 )
 

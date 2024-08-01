@@ -1,9 +1,9 @@
-apiVersion: kapy.kapy.sh/v1
-kind: KapyCluster
+apiVersion: kapy.sh/v1
+kind: ControlPlane
 metadata:
   labels:
     app.kubernetes.io/name: controller
     app.kubernetes.io/managed-by: kustomize
-  name: kapycluster-sample
+  name: controlplane-sample
 spec:
   # TODO(user): Add fields here

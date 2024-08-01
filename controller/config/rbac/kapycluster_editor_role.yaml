@@ -1,16 +1,16 @@
-# permissions for end users to edit kapyclusters.
+# permissions for end users to edit
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
     app.kubernetes.io/name: controller
     app.kubernetes.io/managed-by: kustomize
-  name: kapycluster-editor-role
+  name: cluster-editor-role
 rules:
 - apiGroups:
-  - kapy.kapy.sh
+  - kapy.sh
   resources:
-  - kapyclusters
+  - controlplanes
   verbs:
   - create
   - delete
@@ -20,8 +20,8 @@ rules:
   - update
   - watch
 - apiGroups:
-  - kapy.kapy.sh
+  - kapy.sh
   resources:
-  - kapyclusters/status
+  - controlplanes/status
   verbs:
   - get

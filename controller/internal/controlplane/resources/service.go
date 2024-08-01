@@ -3,7 +3,7 @@ package resources
 import (
 	"context"
 
-	"github.com/decantor/corpy/controller/internal/scope"
+	"github.com/kapycluster/corpy/controller/internal/scope"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -40,10 +40,7 @@ func (s *Service) Create(ctx context.Context) error {
 					TargetPort: intstr.FromInt(6443),
 				},
 			},
-			Selector: map[string]string{
-				"cluster.kapy.sh/name":      s.scope.Name(),
-				"cluster.kapy.sh/component": "kapy-server",
-			},
+			Selector: s.scope.ServerCommonLabels(),
 		},
 	}
 

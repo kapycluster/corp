@@ -23,45 +23,45 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
-const KapyClusterFinalizer = "cluster.kapy.sh/finalizer"
+const ControlPlaneFinalizer = "controlplanes.kapy.sh/finalizer"
 
 type KapyServer struct {
 	Image       string `json:"image"`
 	Persistence string `json:"persistence"`
 }
 
-// KapyClusterSpec defines the desired state of KapyCluster
-type KapyClusterSpec struct {
+// ControlPlaneSpec defines the desired state of ControlPlane
+type ControlPlaneSpec struct {
 	Server KapyServer `json:"server"`
 }
 
-// KapyClusterStatus defines the observed state of KapyCluster
-type KapyClusterStatus struct {
-	// Ready is set when the KapyCluster is ready to serve
-	Ready bool
+// ControlPlaneStatus defines the observed state of ControlPlane
+type ControlPlaneStatus struct {
+	// Ready is set when the ControlPlane is ready to serve
+	Ready bool `json:"ready"`
 }
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 
-// KapyCluster is the Schema for the kapyclusters API
-type KapyCluster struct {
+// ControlPlane is the Schema for the controlplanes API
+type ControlPlane struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   KapyClusterSpec   `json:"spec,omitempty"`
-	Status KapyClusterStatus `json:"status,omitempty"`
+	Spec   ControlPlaneSpec   `json:"spec,omitempty"`
+	Status ControlPlaneStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// KapyClusterList contains a list of KapyCluster
-type KapyClusterList struct {
+// ControlPlaneList contains a list of ControlPlane
+type ControlPlaneList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []KapyCluster `json:"items"`
+	Items           []ControlPlane `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&KapyCluster{}, &KapyClusterList{})
+	SchemeBuilder.Register(&ControlPlane{}, &ControlPlaneList{})
 }

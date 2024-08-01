@@ -1,23 +1,23 @@
-# permissions for end users to view kapyclusters.
+# permissions for end users to view
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
     app.kubernetes.io/name: controller
     app.kubernetes.io/managed-by: kustomize
-  name: kapycluster-viewer-role
+  name: controlplane-viewer-role
 rules:
 - apiGroups:
-  - kapy.kapy.sh
+  - kapy.sh
   resources:
-  - kapyclusters
+  - controlplanes
   verbs:
   - get
   - list
   - watch
 - apiGroups:
-  - kapy.kapy.sh
+  - kapy.sh
   resources:
-  - kapyclusters/status
+  - controlplanes/status
   verbs:
   - get

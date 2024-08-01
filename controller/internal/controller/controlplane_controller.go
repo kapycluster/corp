@@ -18,7 +18,6 @@ package controller
 
 import (
 	"context"
-	"fmt"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -26,34 +25,33 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	kapyv1 "github.com/decantor/corpy/controller/api/v1"
-	"github.com/decantor/corpy/controller/internal/controlplane/resources"
-	"github.com/decantor/corpy/controller/internal/scope"
+	kapyv1 "github.com/kapycluster/corpy/controller/api/v1"
+	"github.com/kapycluster/corpy/controller/internal/scope"
 )
 
-// KapyClusterReconciler reconciles a KapyCluster object
-type KapyClusterReconciler struct {
+// ControlPlaneReconciler reconciles a ControlPlane object
+type ControlPlaneReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
 }
 
-// +kubebuilder:rbac:groups=cluster.kapy.sh,resources=kapyclusters,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=cluster.kapy.sh,resources=kapyclusters/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=cluster.kapy.sh,resources=kapyclusters/finalizers,verbs=update
+// +kubebuilder:rbac:groups=kapy.sh,resources=controlplanes,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=kapy.sh,resources=controlplanes/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=kapy.sh,resources=controlplanes/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
 // TODO(user): Modify the Reconcile function to compare the state specified by
-// the KapyCluster object against the actual cluster state, and then
+// the ControlPlane object against the actual cluster state, and then
 // perform operations to make the cluster state reflect the state specified by
 // the user.
 //
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.18.2/pkg/reconcile
-func (r *KapyClusterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *ControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	l := log.FromContext(ctx)
 
-	kc := kapyv1.KapyCluster{}
+	kc := kapyv1.ControlPlane{}
 	err := r.Get(ctx, client.ObjectKey{Namespace: req.Namespace, Name: req.Name}, &kc)
 	if err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
@@ -65,33 +63,29 @@ func (r *KapyClusterReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		// reconcile delete here
 	}
 
-	if !controllerutil.ContainsFinalizer(&kc, kapyv1.KapyClusterFinalizer) {
-		controllerutil.AddFinalizer(&kc, kapyv1.KapyClusterFinalizer)
+	if !controllerutil.ContainsFinalizer(&kc, kapyv1.ControlPlaneFinalizer) {
+		controllerutil.AddFinalizer(&kc, kapyv1.ControlPlaneFinalizer)
 
 		err := r.Update(ctx, &kc)
 		if err != nil {
 			return ctrl.Result{}, err
 		}
 
-		l.Info("added finalizer to KapyCluster object")
+		l.Info("added finalizer to ControlPlane object")
 	}
 
 	if kc.Status.Ready {
-		l.Info("KapyCluster already reconciled", "name", scope.Name())
+		l.Info("ControlPlane already reconciled", "name", scope.Name())
 	}
 
-	l.Info("creating service for control plane")
-	svc := resources.NewService(r.Client, scope)
-	if err := svc.Create(ctx); err != nil {
-		return ctrl.Result{}, fmt.Errorf("failed to create service for control plane %s: %w", scope.Name(), err)
-	}
+	l.Info("creating control plane", "name", scope.Name(), "namespace", scope.Namespace())
 
 	return ctrl.Result{}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *KapyClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *ControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&kapyv1.KapyCluster{}).
+		For(&kapyv1.ControlPlane{}).
 		Complete(r)
 }

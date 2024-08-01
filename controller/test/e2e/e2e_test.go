@@ -24,7 +24,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/decantor/corpy/controller/test/utils"
+	"github.com/kapycluster/corpy/controller/test/utils"
 )
 
 const namespace = "controller-system"

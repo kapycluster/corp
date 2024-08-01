@@ -34,8 +34,8 @@ import (
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
-	kapyv1 "github.com/decantor/corpy/controller/api/v1"
-	"github.com/decantor/corpy/controller/internal/controller"
+	kapyv1 "github.com/kapycluster/corpy/controller/api/v1"
+	"github.com/kapycluster/corpy/controller/internal/controller"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -123,11 +123,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controller.KapyClusterReconciler{
+	if err = (&controller.ControlPlaneReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "KapyCluster")
+		setupLog.Error(err, "unable to create controller", "controller", "ControlPlane")
 		os.Exit(1)
 	}
 	// +kubebuilder:scaffold:builder

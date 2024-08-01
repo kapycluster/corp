@@ -29,9 +29,8 @@
             vendorHash = "sha256-EBVD/RzVpxNcwyVHP1c4aKpgNm4zjCz/99LvfA0Oc/Q=";
           };
           panelContainer = pkgs.dockerTools.buildLayeredImage {
-            name = "ghcr.io/decantor/panel";
+            name = "ghcr.io/kapycluster/panel";
             tag = "latest";
-            # contents = [  ];
             config = {
               Cmd = "${panel}/bin/panel";
               ExposedPorts = { "8080/tcp" = { }; };
@@ -55,6 +54,8 @@
           default = pkgs.mkShell {
             nativeBuildInputs = with pkgs; [
               go
+              kubectl
+              kubectx
             ];
           };
         });

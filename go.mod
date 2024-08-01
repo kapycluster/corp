@@ -1,4 +1,4 @@
-module github.com/decantor/corpy
+module github.com/kapycluster/corpy
 
 go 1.22.0
 

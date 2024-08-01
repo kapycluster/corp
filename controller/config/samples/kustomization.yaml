@@ -1,4 +1,4 @@
 ## Append samples of your project ##
 resources:
-- kapy_v1_kapycluster.yaml
+- kapy_v1_controlplane.yaml
 # +kubebuilder:scaffold:manifestskustomizesamples
