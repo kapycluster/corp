@@ -45,11 +45,11 @@ jobs:
       - name: Build and push
         id: docker-build
         uses: docker/build-push-action@v6
-        file: ${{ env.DOCKERFILE }}
         with:
           context: .
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          file: ${{ env.DOCKERFILE }}
           build-args: |
             BUILDKIT_INLINE_CACHE=1
