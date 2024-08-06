@@ -3,6 +3,7 @@ name: build and push (kapyserver)
 on:
   push:
     branches:
+      - "actions/smaller-builds"
       - "master"
     tags:
       - "v*"
@@ -26,6 +27,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - uses: actions/setup-go@v5
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -36,13 +39,23 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Build kapyserver binary
+        run: |
+          CGO_ENABLED=1 go build \
+            -tags "ctrd apparmor seccomp netcgo osusergo providerless urfave_cli_no_docs" \
+            -buildvcs=false \
+            -gcflags "all=" \
+            -ldflags "-w -s -extldflags '-static -lm -ldl -lz -lpthread'" \
+            -o bin/kapyserver \
+            ./kapyserver/cmd/main.go
+
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
-      - name: Build and push
+      - name: Build container and push to registry
         id: docker-build
         uses: docker/build-push-action@v6
         with:
