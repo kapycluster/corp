@@ -1,19 +1,8 @@
-FROM --platform=${BUILDPLATFORM} golang:1.22 as builder
-ARG TARGETOS
-ARG TARGETARCH
-
-WORKDIR /workspace
-COPY go.mod go.mod
-COPY go.sum go.sum
-RUN go mod download
-
-COPY ./kapyserver/ kapyserver/
-
-RUN CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} go build -a -o kapyserver kapyserver/cmd/main.go
-
-FROM gcr.io/distroless/static:nonroot
+FROM alpine:latest
+RUN apk add --no-cache cni-plugins
+ENV PATH=/usr/share/cni-plugins/bin:$PATH
+COPY ./bin/kapyserver /
 WORKDIR /
-COPY --from=builder /workspace/kapyserver .
 USER 65532:65532
 
 ENTRYPOINT ["/kapyserver"]
