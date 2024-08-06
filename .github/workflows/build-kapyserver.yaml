@@ -3,7 +3,6 @@ name: build and push (kapyserver)
 on:
   push:
     branches:
-      - "actions/smaller-builds"
       - "master"
     tags:
       - "v*"
