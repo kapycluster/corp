@@ -42,7 +42,7 @@ jobs:
       - name: Build kapyserver binary
         run: |
           CGO_ENABLED=1 go build \
-            -tags "ctrd apparmor seccomp netcgo osusergo providerless urfave_cli_no_docs" \
+            -tags "ctrd netcgo osusergo providerless urfave_cli_no_docs" \
             -buildvcs=false \
             -gcflags "all=" \
             -ldflags "-w -s -extldflags '-static -lm -ldl -lz -lpthread'" \
