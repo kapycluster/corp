@@ -11,7 +11,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: kapyserver
+  IMAGE_NAME: kapycluster/kapyserver
   DOCKERFILE: docker/kapyserver.dockerfile
 
 jobs:
