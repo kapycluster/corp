@@ -36,8 +36,7 @@ func run(serverConfig *config.ServerConfig) error {
 		return fmt.Errorf("initializing logging: %w", err)
 	}
 
-	// We have to pass an empty cmds.Server{} since it's needed down below; can be
-	// empty however.
+	// We have to pass an empty cmds.Server{} since it's needed down below
 	if err := server.StartServer(ctx, &serverConfig.Config, &cmds.Server{}); err != nil {
 		return fmt.Errorf("starting server: %w", err)
 	}

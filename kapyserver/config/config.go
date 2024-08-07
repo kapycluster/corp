@@ -37,12 +37,12 @@ func NewServerConfig() (*ServerConfig, error) {
 	config := &ServerConfig{}
 	config.DisableAgent = true
 	config.ControlConfig.Token = util.MustGetEnv("KAPYSERVER_TOKEN")
-	config.ControlConfig.DataDir = util.MustGetEnv("KAPYSERVER_DATA_DIR")
 	config.ControlConfig.KubeConfigOutput = util.MustGetEnv("KAPYSERVER_KUBECONFIG_PATH")
 	config.ControlConfig.AdvertiseIP = util.MustGetEnv("KAPYSERVER_ADVERTISE_IP")
 	config.LBAddress = util.MustGetEnv("KAPYSERVER_LB_ADDRESS")
 	config.ClusterCIDR = util.GetEnv("KAPYSERVER_CLUSTER_CIDR")
 	config.ServiceCIDR = util.GetEnv("KAPYSERVER_SERVICE_CIDR")
+	config.ControlConfig.DataDir = util.GetEnv("KAPYSERVER_DATA_DIR")
 	config.ControlConfig.Datastore.Endpoint = util.MustGetEnv("KAPYSERVER_DATASTORE")
 	config.ControlConfig.Datastore.NotifyInterval = 5 * time.Second
 	config.ControlConfig.BindAddress = config.ControlConfig.AdvertiseIP
@@ -50,6 +50,10 @@ func NewServerConfig() (*ServerConfig, error) {
 	config.ControlConfig.HTTPSPort = 6443
 	config.ControlConfig.SupervisorPort = config.ControlConfig.HTTPSPort
 	config.SupervisorPort = config.ControlConfig.HTTPSPort
+
+	if config.ControlConfig.DataDir == "" {
+		config.ControlConfig.DataDir = "/data"
+	}
 
 	if config.ClusterCIDR == "" {
 		config.ClusterCIDR = defaultClusterCIDR
