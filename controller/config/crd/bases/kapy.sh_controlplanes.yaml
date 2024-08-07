@@ -11,6 +11,8 @@ spec:
     kind: ControlPlane
     listKind: ControlPlaneList
     plural: controlplanes
+    shortNames:
+    - cp
     singular: controlplane
   scope: Namespaced
   versions:
@@ -39,17 +41,26 @@ spec:
           spec:
             description: ControlPlaneSpec defines the desired state of ControlPlane
             properties:
+              network:
+                properties:
+                  loadBalancerAddress:
+                    type: string
+                type: object
               server:
                 properties:
                   image:
                     type: string
                   persistence:
                     type: string
+                  token:
+                    type: string
                 required:
                 - image
                 - persistence
+                - token
                 type: object
             required:
+            - network
             - server
             type: object
           status:

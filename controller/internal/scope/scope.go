@@ -35,6 +35,18 @@ func (k *ControlPlaneScope) ServerImage() string {
 	return k.kc.Spec.Server.Image
 }
 
+func (k *ControlPlaneScope) Persistence() string {
+	return k.kc.Spec.Server.Persistence
+}
+
+func (k *ControlPlaneScope) Token() string {
+	return k.kc.Spec.Server.Token
+}
+
+func (k *ControlPlaneScope) LoadBalancerAddress() string {
+	return k.kc.Spec.Network.LoadBalancerAddress
+}
+
 func (k *ControlPlaneScope) SetControllerReference(ctx context.Context, child metav1.Object) error {
 	if err := controllerutil.SetControllerReference(k.kc, child, k.client.Scheme()); err != nil {
 		return err

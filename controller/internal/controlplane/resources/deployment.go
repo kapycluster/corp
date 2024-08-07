@@ -4,23 +4,25 @@ import (
 	"context"
 
 	"github.com/kapycluster/corpy/controller/internal/scope"
+	"github.com/kapycluster/corpy/types"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
+	k8stypes "k8s.io/apimachinery/pkg/types"
+
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type Deployment struct {
 	Client client.Client
-	types.NamespacedName
+	k8stypes.NamespacedName
 	scope *scope.ControlPlaneScope
 }
 
 func NewDeployment(client client.Client, scope *scope.ControlPlaneScope) *Deployment {
 	return &Deployment{
 		Client:         client,
-		NamespacedName: types.NamespacedName{Name: "kapy-server", Namespace: scope.Namespace()},
+		NamespacedName: k8stypes.NamespacedName{Name: "kapyserver", Namespace: scope.Namespace()},
 		scope:          scope,
 	}
 }
@@ -55,18 +57,48 @@ func (d *Deployment) deployment() *appsv1.Deployment {
 					Labels: d.scope.ServerCommonLabels(),
 				},
 				Spec: corev1.PodSpec{
+					ImagePullSecrets: []corev1.LocalObjectReference{{Name: "regcred"}},
 					Containers: []corev1.Container{
 						{
-							Name:            "kapy-server",
-							Image:           d.scope.ServerImage(),
-							ImagePullPolicy: corev1.PullIfNotPresent,
+							Name:  "kapy-server",
+							Image: d.scope.ServerImage(),
+							// TODO: we might want to change this!
+							ImagePullPolicy: corev1.PullAlways,
 							// TODO(icy): populate these
-							Command: []string{"k3s", "server"},
-							Args: []string{
-								"--disable-agent",
-								"--disable=traefik",
-								"--disable=servicelb",
-								"--disable=metrics-server",
+							Command: []string{"/kapyserver"},
+							Env: []corev1.EnvVar{
+								{
+									Name:  types.KapyServerClusterCIDR,
+									Value: "10.11.0.0/16",
+								},
+								{
+									Name:  types.KapyServerDatastore,
+									Value: d.scope.Persistence(),
+								},
+								{
+									Name:  types.KapyServerKubeconfigPath,
+									Value: "/tmp/data/kubeconfig",
+								},
+								{
+									Name:  types.KapyServerDataDir,
+									Value: "/tmp/data",
+								},
+								{
+									Name:  types.KapyServerLoadBalancerAddress,
+									Value: d.scope.LoadBalancerAddress(),
+								},
+								{
+									Name: types.KapyServerAdvertiseIP,
+									ValueFrom: &corev1.EnvVarSource{
+										FieldRef: &corev1.ObjectFieldSelector{
+											FieldPath: "status.podIP",
+										},
+									},
+								},
+								{
+									Name:  types.KapyServerToken,
+									Value: d.scope.Token(),
+								},
 							},
 							// TODO(icy): add live/readiness probes back; they need auth
 						},

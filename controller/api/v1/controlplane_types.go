@@ -28,11 +28,17 @@ const ControlPlaneFinalizer = "controlplanes.kapy.sh/finalizer"
 type KapyServer struct {
 	Image       string `json:"image"`
 	Persistence string `json:"persistence"`
+	Token       string `json:"token"`
+}
+
+type Network struct {
+	LoadBalancerAddress string `json:"loadBalancerAddress,omitempty"`
 }
 
 // ControlPlaneSpec defines the desired state of ControlPlane
 type ControlPlaneSpec struct {
-	Server KapyServer `json:"server"`
+	Server  KapyServer `json:"server"`
+	Network Network    `json:"network"`
 }
 
 // ControlPlaneStatus defines the observed state of ControlPlane
@@ -43,7 +49,7 @@ type ControlPlaneStatus struct {
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
-
+// +kubebuilder:resource:shortName=cp
 // ControlPlane is the Schema for the controlplanes API
 type ControlPlane struct {
 	metav1.TypeMeta   `json:",inline"`
