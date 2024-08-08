@@ -38,7 +38,7 @@ func NewServerConfig() (*ServerConfig, error) {
 	config := &ServerConfig{}
 	config.DisableAgent = true
 	config.ControlConfig.Token = util.MustGetEnv(types.KapyServerToken)
-	config.ControlConfig.KubeConfigOutput = util.MustGetEnv(types.KapyServerKubeconfigPath)
+	config.ControlConfig.KubeConfigOutput = util.MustGetEnv(types.KapyServerKubeConfigPath)
 	config.ControlConfig.AdvertiseIP = util.MustGetEnv(types.KapyServerAdvertiseIP)
 	config.LBAddress = util.MustGetEnv(types.KapyServerLoadBalancerAddress)
 	config.ClusterCIDR = util.GetEnv(types.KapyServerClusterCIDR)

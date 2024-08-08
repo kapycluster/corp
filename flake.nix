@@ -56,6 +56,9 @@
               go
               kubectl
               kubectx
+              protobuf
+              protoc-gen-go
+              protoc-gen-go-grpc
             ];
           };
         });

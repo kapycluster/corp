@@ -76,7 +76,7 @@ func (d *Deployment) deployment() *appsv1.Deployment {
 									Value: d.scope.Persistence(),
 								},
 								{
-									Name:  types.KapyServerKubeconfigPath,
+									Name:  types.KapyServerKubeConfigPath,
 									Value: "/tmp/data/kubeconfig",
 								},
 								{
