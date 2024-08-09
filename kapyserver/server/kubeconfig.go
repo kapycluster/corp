@@ -10,6 +10,7 @@ import (
 )
 
 type kubeConfigServer struct {
+	kubeconfig.UnimplementedKubeConfigServiceServer
 	config *config.ServerConfig
 }
 
