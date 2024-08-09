@@ -9,4 +9,5 @@ const (
 	KapyServerServiceCIDR         = "KAPYSERVER_SERVICE_CIDR"
 	KapyServerDatastore           = "KAPYSERVER_DATASTORE"
 	KapyServerAdvertiseIP         = "KAPYSERVER_ADVERTISE_IP"
+	KapyServerGRPCAddress         = "KAPYSERVER_GRPC_ADDRESS"
 )
