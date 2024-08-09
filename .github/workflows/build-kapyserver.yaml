@@ -41,7 +41,6 @@ jobs:
       - name: Build kapyserver binary
         run: |
           CGO_ENABLED=1 go build \
-            -tags "ctrd netcgo osusergo providerless urfave_cli_no_docs" \
             -buildvcs=false \
             -gcflags "all=" \
             -ldflags "-w -s -extldflags '-static -lm -ldl -lz -lpthread'" \
