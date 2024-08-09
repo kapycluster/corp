@@ -59,6 +59,7 @@
               protobuf
               protoc-gen-go
               protoc-gen-go-grpc
+              cni-plugins
             ];
           };
         });
