@@ -45,8 +45,9 @@ func Start() error {
 
 	lis, err := net.Listen("tcp", util.MustGetEnv(types.KapyServerGRPCAddress))
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		return fmt.Errorf("failed to listen: %w", err)
 	}
+	defer lis.Close()
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
 
@@ -77,8 +78,7 @@ func Start() error {
 		return nil
 	}
 
-	<-errCh
-	return nil
+	return <-errCh
 }
 
 // Our own minimal k3s run function
