@@ -15,6 +15,7 @@ import (
 	"github.com/k3s-io/k3s/pkg/clientaccess"
 	"github.com/k3s-io/k3s/pkg/server"
 	"github.com/kapycluster/corpy/kapyserver/config"
+	"github.com/kapycluster/corpy/kapyserver/util"
 	"github.com/kapycluster/corpy/types"
 	kcpb "github.com/kapycluster/corpy/types/kubeconfig"
 	"google.golang.org/grpc"
@@ -42,7 +43,7 @@ func Start() error {
 		}
 	}()
 
-	lis, err := net.Listen("tcp", types.KapyServerGRPCAddress)
+	lis, err := net.Listen("tcp", util.MustGetEnv(types.KapyServerGRPCAddress))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
