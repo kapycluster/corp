@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 
 	"github.com/k3s-io/k3s/pkg/agent"
@@ -16,8 +17,7 @@ import (
 	"github.com/kapycluster/corpy/kapyserver/config"
 	"github.com/kapycluster/corpy/kapyserver/util"
 	"github.com/kapycluster/corpy/types"
-	kcpb "github.com/kapycluster/corpy/types/kubeconfig"
-	"golang.org/x/sync/errgroup"
+	"github.com/kapycluster/corpy/types/kubeconfig"
 	"google.golang.org/grpc"
 )
 
@@ -25,48 +25,56 @@ func Start() error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
-
 	serverConfig, err := config.NewServerConfig()
 	if err != nil {
-		return fmt.Errorf("config failed: %w", err)
+		return fmt.Errorf("failed to configure: %w", err)
 	}
 
-	g := errgroup.Group{}
+	wg := sync.WaitGroup{}
+	errCh := make(chan error, 2)
 
-	g.Go(func() error {
-		return run(ctx, serverConfig)
-	})
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		errCh <- run(ctx, serverConfig)
+	}()
 
-	lis, err := net.Listen("tcp", util.MustGetEnv(types.KapyServerGRPCAddress))
+	lis, err := net.Listen("tcp", util.GetEnv(types.KapyServerGRPCAddress))
 	if err != nil {
 		return fmt.Errorf("failed to listen: %w", err)
 	}
 	defer lis.Close()
+
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
 
-	kcpb.RegisterKubeConfigServiceServer(grpcServer, &kubeConfigServer{
+	kubeconfig.RegisterKubeConfigServiceServer(grpcServer, &kubeConfigServer{
 		config: serverConfig,
 	})
-	g.Go(func() error {
-		if err := grpcServer.Serve(lis); err != nil {
-			return fmt.Errorf("running kubeconfig gRPC server: %w", err)
-		}
-		return nil
-	})
 
-	if err := g.Wait(); err != nil {
-		return err
-	}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		errCh <- grpcServer.Serve(lis)
+	}()
 
+	// Create a channel to receive signals
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+
+	// Wait for an error, signal, or context cancellation
 	select {
-	case sig := <-signals:
-		fmt.Printf("recieved signal: %s\n", sig)
+	case err := <-errCh:
+		return err
+	case <-sigChan:
+		fmt.Println("recieved signal, shutting down...")
 		cancel()
-		return nil
+	case <-ctx.Done():
+		fmt.Println("context canceled, shutting down...")
 	}
+
+	wg.Wait()
+	return nil
 }
 
 // Our own minimal k3s run function
