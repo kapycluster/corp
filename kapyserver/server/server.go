@@ -7,7 +7,6 @@ import (
 	"net"
 	"os"
 	"os/signal"
-	"sync"
 	"syscall"
 
 	"github.com/k3s-io/k3s/pkg/agent"
@@ -18,6 +17,7 @@ import (
 	"github.com/kapycluster/corpy/kapyserver/util"
 	"github.com/kapycluster/corpy/types"
 	kcpb "github.com/kapycluster/corpy/types/kubeconfig"
+	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 )
 
@@ -33,15 +33,11 @@ func Start() error {
 		return fmt.Errorf("config failed: %w", err)
 	}
 
-	errCh := make(chan error)
-	wg := sync.WaitGroup{}
+	g := errgroup.Group{}
 
-	go func() {
-		wg.Add(1)
-		if err := run(ctx, serverConfig); err != nil {
-			errCh <- fmt.Errorf("running k3s server: %w", err)
-		}
-	}()
+	g.Go(func() error {
+		return run(ctx, serverConfig)
+	})
 
 	lis, err := net.Listen("tcp", util.MustGetEnv(types.KapyServerGRPCAddress))
 	if err != nil {
@@ -54,31 +50,23 @@ func Start() error {
 	kcpb.RegisterKubeConfigServiceServer(grpcServer, &kubeConfigServer{
 		config: serverConfig,
 	})
-	go func() {
-		wg.Add(1)
+	g.Go(func() error {
 		if err := grpcServer.Serve(lis); err != nil {
-			errCh <- fmt.Errorf("running kubeconfig gRPC server: %w", err)
+			return fmt.Errorf("running kubeconfig gRPC server: %w", err)
 		}
-	}()
+		return nil
+	})
 
-	go func() {
-		wg.Wait()
-		close(errCh)
-	}()
+	if err := g.Wait(); err != nil {
+		return err
+	}
 
 	select {
-	case err := <-errCh:
-		if err != nil {
-			cancel()
-			return err
-		}
 	case sig := <-signals:
 		fmt.Printf("recieved signal: %s\n", sig)
 		cancel()
 		return nil
 	}
-
-	return <-errCh
 }
 
 // Our own minimal k3s run function

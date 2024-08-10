@@ -8,6 +8,6 @@ import (
 
 func main() {
 	if err := server.Start(); err != nil {
-		log.Fatalf("failed to start kapy-server: %+v\n", err)
+		log.Fatalf("kapyserver: %+v\n", err)
 	}
 }
