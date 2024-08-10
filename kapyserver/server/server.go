@@ -33,12 +33,6 @@ func Start() error {
 	wg := sync.WaitGroup{}
 	errCh := make(chan error, 2)
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		errCh <- run(ctx, serverConfig)
-	}()
-
 	lis, err := net.Listen("tcp", util.GetEnv(types.KapyServerGRPCAddress))
 	if err != nil {
 		return fmt.Errorf("failed to listen: %w", err)
@@ -56,6 +50,12 @@ func Start() error {
 	go func() {
 		defer wg.Done()
 		errCh <- grpcServer.Serve(lis)
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		errCh <- run(ctx, serverConfig)
 	}()
 
 	// Create a channel to receive signals
