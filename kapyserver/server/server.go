@@ -33,18 +33,6 @@ func Start() error {
 	wg := sync.WaitGroup{}
 	errCh := make(chan error, 2)
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		errCh <- run(ctx, serverConfig)
-	}()
-
-	lis, err := net.Listen("tcp", util.GetEnv(types.KapyServerGRPCAddress))
-	if err != nil {
-		return fmt.Errorf("failed to listen: %w", err)
-	}
-	defer lis.Close()
-
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
 
@@ -52,10 +40,51 @@ func Start() error {
 		config: serverConfig,
 	})
 
+	// lis2, err := net.Listen("tcp", "0.0.0.0:6443")
+	// if err != nil {
+	// 	return fmt.Errorf("bruh: %w", err)
+	// }
+	// wg.Add(1)
+	// go func() {
+	// 	log.Println("starting another dummy listener on 6443")
+	// 	defer wg.Done()
+	// 	for {
+	// 		_, err := lis2.Accept()
+	// 		if err != nil {
+	// 			errCh <- err
+	// 		}
+	// 	}
+	// }()
+
+	runWg := &sync.WaitGroup{}
+
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		errCh <- grpcServer.Serve(lis)
+		err := run(ctx, serverConfig, runWg)
+		if err != nil {
+			log.Printf("k3s error: %v", err)
+			errCh <- err
+		}
+	}()
+
+	log.Println("waiting for k3s to come up...")
+	runWg.Wait()
+	wg.Add(1)
+	go func() {
+		lis, err := net.Listen("tcp", util.GetEnv(types.KapyServerGRPCAddress))
+		if err != nil {
+			log.Printf("failed to listen: %s", err)
+			errCh <- err
+		}
+		defer lis.Close()
+		log.Printf("starting gRPC server on %s", util.GetEnv(types.KapyServerGRPCAddress))
+		defer wg.Done()
+		err = grpcServer.Serve(lis)
+		if err != nil {
+			log.Printf("grpc error: %v", err)
+			errCh <- err
+		}
 	}()
 
 	// Create a channel to receive signals
@@ -69,8 +98,10 @@ func Start() error {
 	case <-sigChan:
 		fmt.Println("recieved signal, shutting down...")
 		cancel()
+		grpcServer.GracefulStop()
 	case <-ctx.Done():
 		fmt.Println("context canceled, shutting down...")
+		grpcServer.GracefulStop()
 	}
 
 	wg.Wait()
@@ -78,8 +109,9 @@ func Start() error {
 }
 
 // Our own minimal k3s run function
-func run(ctx context.Context, serverConfig *config.ServerConfig) error {
-	// TODO: investigate this and rewrite
+func run(ctx context.Context, serverConfig *config.ServerConfig, wg *sync.WaitGroup) error {
+	// Waiting for APIServerReady and ETCDReady
+	wg.Add(2)
 
 	cmds.LogConfig.VLevel = 5
 	if err := cmds.InitLogging(); err != nil {
@@ -112,9 +144,16 @@ func run(ctx context.Context, serverConfig *config.ServerConfig) error {
 	go func() {
 		<-serverConfig.ControlConfig.Runtime.APIServerReady
 		log.Println("apiserver is up")
+		wg.Done()
+
 		<-serverConfig.ControlConfig.Runtime.ETCDReady
 		log.Println("etcd is up")
+		wg.Done()
 	}()
 
-	return agent.RunStandalone(ctx, agentConfig)
+	if err := agent.RunStandalone(ctx, agentConfig); err != nil {
+		return err
+	}
+
+	return nil
 }
