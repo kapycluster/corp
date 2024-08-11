@@ -99,6 +99,10 @@ func (d *Deployment) deployment() *appsv1.Deployment {
 									Name:  types.KapyServerToken,
 									Value: d.scope.Token(),
 								},
+								{
+									Name:  types.KapyServerGRPCAddress,
+									Value: "127.0.0.1:54545",
+								},
 							},
 							// TODO(icy): add live/readiness probes back; they need auth
 						},

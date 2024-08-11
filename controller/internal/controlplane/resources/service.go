@@ -20,7 +20,7 @@ type Service struct {
 func NewService(client client.Client, scope *scope.ControlPlaneScope) *Service {
 	return &Service{
 		Client:         client,
-		NamespacedName: types.NamespacedName{Name: "kapy-server", Namespace: scope.Namespace()},
+		NamespacedName: types.NamespacedName{Name: "kapyserver", Namespace: scope.Namespace()},
 		scope:          scope,
 	}
 }
@@ -35,9 +35,14 @@ func (s *Service) Create(ctx context.Context) error {
 			Type: corev1.ServiceTypeNodePort,
 			Ports: []corev1.ServicePort{
 				{
-					Name:       "kapy-server",
+					Name:       "kapyserver",
 					Port:       6443,
 					TargetPort: intstr.FromInt(6443),
+				},
+				{
+					Name:       "grpc",
+					Port:       54545,
+					TargetPort: intstr.FromInt(54545),
 				},
 			},
 			Selector: s.scope.ServerCommonLabels(),
