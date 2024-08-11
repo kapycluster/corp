@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - "master"
-      - "fix-bind-error"
     tags:
       - "v*"
   workflow_dispatch:
