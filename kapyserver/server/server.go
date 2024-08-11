@@ -71,6 +71,12 @@ func Start() error {
 		}
 	}()
 
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		errCh <- run(ctx, serverConfig)
+	}()
+
 	// Create a channel to receive signals
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
