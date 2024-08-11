@@ -20,14 +20,17 @@ import (
 	"context"
 	"fmt"
 
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	kapyv1 "github.com/kapycluster/corpy/controller/api/v1"
+	"github.com/kapycluster/corpy/controller/internal/controller/kapyclient"
 	"github.com/kapycluster/corpy/controller/internal/controlplane"
 	"github.com/kapycluster/corpy/controller/internal/scope"
+	corev1 "k8s.io/api/core/v1"
 )
 
 // ControlPlaneReconciler reconciles a ControlPlane object
@@ -88,6 +91,37 @@ func (r *ControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	kcp.Status.Ready = true
 	if err := scope.UpdateStatus(ctx, &kcp); err != nil {
 		return ctrl.Result{}, fmt.Errorf("failed to update status: %w", err)
+	}
+
+	l.Info("asking kapyserver for kubeconfig")
+	kapyclient, err := kapyclient.NewKapyClient("127.0.0.1:54545")
+	if err != nil {
+		return ctrl.Result{}, fmt.Errorf("failed to connect to kapyserver: %w", err)
+	}
+	defer kapyclient.Close()
+
+	kcfg, err := kapyclient.GetKubeConfig(ctx)
+	if err != nil {
+		return ctrl.Result{}, fmt.Errorf("failed to fetch kubeconfig: %w", err)
+	}
+
+	kcfgData := make(map[string][]byte)
+	kcfgData["value"] = []byte(kcfg)
+
+	secret := &corev1.Secret{
+		ObjectMeta: v1.ObjectMeta{
+			Name:      "kubeconfig",
+			Namespace: scope.Namespace(),
+		},
+		Data: kcfgData,
+	}
+
+	l.Info("creating kubeconfig secret", "name", secret.Name)
+	if err := r.Client.Create(ctx, secret); client.IgnoreAlreadyExists(err) != nil {
+		return ctrl.Result{}, fmt.Errorf("failed to create kubeconfig secret: %w", err)
+	}
+	if err := scope.SetControllerReference(ctx, secret); err != nil {
+		return ctrl.Result{}, fmt.Errorf("failed to set controller reference: %w", err)
 	}
 
 	return ctrl.Result{}, nil
