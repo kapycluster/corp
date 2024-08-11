@@ -40,22 +40,6 @@ func Start() error {
 		config: serverConfig,
 	})
 
-	// lis2, err := net.Listen("tcp", "0.0.0.0:6443")
-	// if err != nil {
-	// 	return fmt.Errorf("bruh: %w", err)
-	// }
-	// wg.Add(1)
-	// go func() {
-	// 	log.Println("starting another dummy listener on 6443")
-	// 	defer wg.Done()
-	// 	for {
-	// 		_, err := lis2.Accept()
-	// 		if err != nil {
-	// 			errCh <- err
-	// 		}
-	// 	}
-	// }()
-
 	runWg := &sync.WaitGroup{}
 
 	wg.Add(1)
