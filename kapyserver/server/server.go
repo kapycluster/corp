@@ -36,7 +36,7 @@ func Start() error {
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
 
-	proto.RegisterKubeConfigServiceServer(grpcServer, &kubeConfigServer{
+	proto.RegisterKubeConfigServer(grpcServer, &kubeConfigServer{
 		config: serverConfig,
 	})
 

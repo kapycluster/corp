@@ -19,89 +19,89 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	KubeConfigService_GetKubeConfig_FullMethodName = "/proto.KubeConfigService/GetKubeConfig"
+	KubeConfig_GetKubeConfig_FullMethodName = "/proto.KubeConfig/GetKubeConfig"
 )
 
-// KubeConfigServiceClient is the client API for KubeConfigService service.
+// KubeConfigClient is the client API for KubeConfig service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type KubeConfigServiceClient interface {
-	GetKubeConfig(ctx context.Context, in *GetKubeConfigRequest, opts ...grpc.CallOption) (*GetKubeConfigResponse, error)
+type KubeConfigClient interface {
+	GetKubeConfig(ctx context.Context, in *KubeConfigRequest, opts ...grpc.CallOption) (*KubeConfigData, error)
 }
 
-type kubeConfigServiceClient struct {
+type kubeConfigClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewKubeConfigServiceClient(cc grpc.ClientConnInterface) KubeConfigServiceClient {
-	return &kubeConfigServiceClient{cc}
+func NewKubeConfigClient(cc grpc.ClientConnInterface) KubeConfigClient {
+	return &kubeConfigClient{cc}
 }
 
-func (c *kubeConfigServiceClient) GetKubeConfig(ctx context.Context, in *GetKubeConfigRequest, opts ...grpc.CallOption) (*GetKubeConfigResponse, error) {
-	out := new(GetKubeConfigResponse)
-	err := c.cc.Invoke(ctx, KubeConfigService_GetKubeConfig_FullMethodName, in, out, opts...)
+func (c *kubeConfigClient) GetKubeConfig(ctx context.Context, in *KubeConfigRequest, opts ...grpc.CallOption) (*KubeConfigData, error) {
+	out := new(KubeConfigData)
+	err := c.cc.Invoke(ctx, KubeConfig_GetKubeConfig_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// KubeConfigServiceServer is the server API for KubeConfigService service.
-// All implementations must embed UnimplementedKubeConfigServiceServer
+// KubeConfigServer is the server API for KubeConfig service.
+// All implementations must embed UnimplementedKubeConfigServer
 // for forward compatibility
-type KubeConfigServiceServer interface {
-	GetKubeConfig(context.Context, *GetKubeConfigRequest) (*GetKubeConfigResponse, error)
-	mustEmbedUnimplementedKubeConfigServiceServer()
+type KubeConfigServer interface {
+	GetKubeConfig(context.Context, *KubeConfigRequest) (*KubeConfigData, error)
+	mustEmbedUnimplementedKubeConfigServer()
 }
 
-// UnimplementedKubeConfigServiceServer must be embedded to have forward compatible implementations.
-type UnimplementedKubeConfigServiceServer struct {
+// UnimplementedKubeConfigServer must be embedded to have forward compatible implementations.
+type UnimplementedKubeConfigServer struct {
 }
 
-func (UnimplementedKubeConfigServiceServer) GetKubeConfig(context.Context, *GetKubeConfigRequest) (*GetKubeConfigResponse, error) {
+func (UnimplementedKubeConfigServer) GetKubeConfig(context.Context, *KubeConfigRequest) (*KubeConfigData, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetKubeConfig not implemented")
 }
-func (UnimplementedKubeConfigServiceServer) mustEmbedUnimplementedKubeConfigServiceServer() {}
+func (UnimplementedKubeConfigServer) mustEmbedUnimplementedKubeConfigServer() {}
 
-// UnsafeKubeConfigServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to KubeConfigServiceServer will
+// UnsafeKubeConfigServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to KubeConfigServer will
 // result in compilation errors.
-type UnsafeKubeConfigServiceServer interface {
-	mustEmbedUnimplementedKubeConfigServiceServer()
+type UnsafeKubeConfigServer interface {
+	mustEmbedUnimplementedKubeConfigServer()
 }
 
-func RegisterKubeConfigServiceServer(s grpc.ServiceRegistrar, srv KubeConfigServiceServer) {
-	s.RegisterService(&KubeConfigService_ServiceDesc, srv)
+func RegisterKubeConfigServer(s grpc.ServiceRegistrar, srv KubeConfigServer) {
+	s.RegisterService(&KubeConfig_ServiceDesc, srv)
 }
 
-func _KubeConfigService_GetKubeConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetKubeConfigRequest)
+func _KubeConfig_GetKubeConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(KubeConfigRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(KubeConfigServiceServer).GetKubeConfig(ctx, in)
+		return srv.(KubeConfigServer).GetKubeConfig(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: KubeConfigService_GetKubeConfig_FullMethodName,
+		FullMethod: KubeConfig_GetKubeConfig_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(KubeConfigServiceServer).GetKubeConfig(ctx, req.(*GetKubeConfigRequest))
+		return srv.(KubeConfigServer).GetKubeConfig(ctx, req.(*KubeConfigRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// KubeConfigService_ServiceDesc is the grpc.ServiceDesc for KubeConfigService service.
+// KubeConfig_ServiceDesc is the grpc.ServiceDesc for KubeConfig service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var KubeConfigService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "proto.KubeConfigService",
-	HandlerType: (*KubeConfigServiceServer)(nil),
+var KubeConfig_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "proto.KubeConfig",
+	HandlerType: (*KubeConfigServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "GetKubeConfig",
-			Handler:    _KubeConfigService_GetKubeConfig_Handler,
+			Handler:    _KubeConfig_GetKubeConfig_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

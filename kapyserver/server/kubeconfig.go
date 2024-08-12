@@ -10,13 +10,13 @@ import (
 )
 
 type kubeConfigServer struct {
-	proto.UnimplementedKubeConfigServiceServer
+	proto.UnimplementedKubeConfigServer
 	config *config.ServerConfig
 }
 
 func (k *kubeConfigServer) GetKubeConfig(
-	ctx context.Context, gkcr *proto.GetKubeConfigRequest,
-) (*proto.GetKubeConfigResponse, error) {
+	ctx context.Context, gkcr *proto.KubeConfigRequest,
+) (*proto.KubeConfigData, error) {
 
 	kcfgFile := k.config.ControlConfig.KubeConfigOutput
 	kcfg, err := os.ReadFile(kcfgFile)
@@ -24,7 +24,7 @@ func (k *kubeConfigServer) GetKubeConfig(
 		return nil, fmt.Errorf("failed to read proto file: %w", err)
 	}
 
-	return &proto.GetKubeConfigResponse{
+	return &proto.KubeConfigData{
 		KubeConfig: string(kcfg),
 	}, nil
 }

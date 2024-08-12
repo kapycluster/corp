@@ -9,8 +9,8 @@ import (
 )
 
 func (k *KapyClient) GetKubeConfig(ctx context.Context) ([]byte, error) {
-	kcfgClient := proto.NewKubeConfigServiceClient(k.client)
-	kreq := &proto.GetKubeConfigRequest{}
+	kcfgClient := proto.NewKubeConfigClient(k.client)
+	kreq := &proto.KubeConfigRequest{}
 
 	var callOpts []grpc.CallOption
 	kcfg, err := kcfgClient.GetKubeConfig(ctx, kreq, callOpts...)
