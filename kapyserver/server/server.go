@@ -39,6 +39,9 @@ func Start() error {
 	proto.RegisterKubeConfigServer(grpcServer, &kubeConfigServer{
 		config: serverConfig,
 	})
+	proto.RegisterTokenServer(grpcServer, &tokenServer{
+		config: serverConfig,
+	})
 
 	runWg := &sync.WaitGroup{}
 
@@ -117,8 +120,6 @@ func run(ctx context.Context, serverConfig *config.ServerConfig, wg *sync.WaitGr
 	if err != nil {
 		return fmt.Errorf("generating token: %w", err)
 	}
-
-	fmt.Println(token)
 
 	agentConfig := cmds.Agent{
 		DataDir:                  serverConfig.ControlConfig.DataDir,

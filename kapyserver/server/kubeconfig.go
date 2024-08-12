@@ -15,7 +15,7 @@ type kubeConfigServer struct {
 }
 
 func (k *kubeConfigServer) GetKubeConfig(
-	ctx context.Context, gkcr *proto.KubeConfigRequest,
+	ctx context.Context, kr *proto.KubeConfigRequest,
 ) (*proto.KubeConfigData, error) {
 
 	kcfgFile := k.config.ControlConfig.KubeConfigOutput

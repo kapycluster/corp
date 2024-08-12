@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package proto;
+option go_package = "github.com/kapycluster/kapyserver/types/proto";
+
+service Token {
+    rpc GenerateToken(TokenRequest) returns (TokenString);
+}
+
+message TokenRequest{}
+
+message TokenString {
+    string token = 1;
+}
