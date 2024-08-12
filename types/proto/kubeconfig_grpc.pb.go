@@ -4,7 +4,7 @@
 // - protoc             v4.25.3
 // source: kubeconfig.proto
 
-package kubeconfig
+package proto
 
 import (
 	context "context"
@@ -19,7 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	KubeConfigService_GetKubeConfig_FullMethodName = "/kubeconfig.KubeConfigService/GetKubeConfig"
+	KubeConfigService_GetKubeConfig_FullMethodName = "/proto.KubeConfigService/GetKubeConfig"
 )
 
 // KubeConfigServiceClient is the client API for KubeConfigService service.
@@ -96,7 +96,7 @@ func _KubeConfigService_GetKubeConfig_Handler(srv interface{}, ctx context.Conte
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var KubeConfigService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "kubeconfig.KubeConfigService",
+	ServiceName: "proto.KubeConfigService",
 	HandlerType: (*KubeConfigServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

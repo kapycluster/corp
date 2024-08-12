@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/kapycluster/corpy/types/kubeconfig"
+	"github.com/kapycluster/corpy/types/proto"
 	"google.golang.org/grpc"
 )
 
 func (k *KapyClient) GetKubeConfig(ctx context.Context) ([]byte, error) {
-	kcfgClient := kubeconfig.NewKubeConfigServiceClient(k.client)
-	kreq := &kubeconfig.GetKubeConfigRequest{}
+	kcfgClient := proto.NewKubeConfigServiceClient(k.client)
+	kreq := &proto.GetKubeConfigRequest{}
 
 	var callOpts []grpc.CallOption
 	kcfg, err := kcfgClient.GetKubeConfig(ctx, kreq, callOpts...)

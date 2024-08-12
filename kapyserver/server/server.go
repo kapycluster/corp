@@ -17,7 +17,7 @@ import (
 	"github.com/kapycluster/corpy/kapyserver/config"
 	"github.com/kapycluster/corpy/kapyserver/util"
 	"github.com/kapycluster/corpy/types"
-	"github.com/kapycluster/corpy/types/kubeconfig"
+	"github.com/kapycluster/corpy/types/proto"
 	"google.golang.org/grpc"
 )
 
@@ -36,7 +36,7 @@ func Start() error {
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
 
-	kubeconfig.RegisterKubeConfigServiceServer(grpcServer, &kubeConfigServer{
+	proto.RegisterKubeConfigServiceServer(grpcServer, &kubeConfigServer{
 		config: serverConfig,
 	})
 
@@ -74,7 +74,7 @@ func Start() error {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		errCh <- run(ctx, serverConfig)
+		errCh <- run(ctx, serverConfig, runWg)
 	}()
 
 	// Create a channel to receive signals
