@@ -11,4 +11,4 @@ spec:
     persistence: sqlite
     token: dummy
   network:
-    loadBalancerAddress: 100.99.148.52
+    loadBalancerAddress: 0.0.0.0
