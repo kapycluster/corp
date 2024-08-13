@@ -59,6 +59,7 @@ func Start() error {
 	runWg.Wait()
 	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		lis, err := net.Listen("tcp", util.GetEnv(types.KapyServerGRPCAddress))
 		if err != nil {
 			log.Printf("failed to listen: %s", err)
@@ -66,18 +67,11 @@ func Start() error {
 		}
 		defer lis.Close()
 		log.Printf("starting gRPC server on %s", util.GetEnv(types.KapyServerGRPCAddress))
-		defer wg.Done()
 		err = grpcServer.Serve(lis)
 		if err != nil {
 			log.Printf("grpc error: %v", err)
 			errCh <- err
 		}
-	}()
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		errCh <- run(ctx, serverConfig, runWg)
 	}()
 
 	// Create a channel to receive signals
