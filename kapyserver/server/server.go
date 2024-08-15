@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"fmt"
-	"log"
 	"net"
 	"os"
 	"os/signal"
@@ -16,6 +15,7 @@ import (
 	"github.com/k3s-io/k3s/pkg/server"
 	"github.com/kapycluster/corpy/kapyserver/config"
 	"github.com/kapycluster/corpy/kapyserver/util"
+	"github.com/kapycluster/corpy/log"
 	"github.com/kapycluster/corpy/types"
 	"github.com/kapycluster/corpy/types/proto"
 	"google.golang.org/grpc"
@@ -24,6 +24,9 @@ import (
 func Start() error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+
+	ctx = log.NewContext(ctx, "kapyserver")
+	l := log.FromContext(ctx)
 
 	serverConfig, err := config.NewServerConfig()
 	if err != nil {
@@ -50,26 +53,26 @@ func Start() error {
 		defer wg.Done()
 		err := run(ctx, serverConfig, runWg)
 		if err != nil {
-			log.Printf("k3s error: %v", err)
+			l.Error("k3s error", "error", err)
 			errCh <- err
 		}
 	}()
 
-	log.Println("waiting for k3s to come up...")
+	l.Info("waiting for k3s to come up...")
 	runWg.Wait()
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		lis, err := net.Listen("tcp", util.GetEnv(types.KapyServerGRPCAddress))
 		if err != nil {
-			log.Printf("failed to listen: %s", err)
+			l.Error("failed to listen", "error", err)
 			errCh <- err
 		}
 		defer lis.Close()
-		log.Printf("starting gRPC server on %s", util.GetEnv(types.KapyServerGRPCAddress))
+		l.Info("starting gRPC server", "address", util.GetEnv(types.KapyServerGRPCAddress))
 		err = grpcServer.Serve(lis)
 		if err != nil {
-			log.Printf("grpc error: %v", err)
+			l.Error("grpc error", "error", err)
 			errCh <- err
 		}
 	}()
@@ -128,11 +131,11 @@ func run(ctx context.Context, serverConfig *config.ServerConfig, wg *sync.WaitGr
 
 	go func() {
 		<-serverConfig.ControlConfig.Runtime.APIServerReady
-		log.Println("apiserver is up")
+		log.FromContext(ctx).Info("apiserver is up")
 		wg.Done()
 
 		<-serverConfig.ControlConfig.Runtime.ETCDReady
-		log.Println("etcd is up")
+		log.FromContext(ctx).Info("etcd is up")
 		wg.Done()
 	}()
 
