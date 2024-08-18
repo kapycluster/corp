@@ -9,8 +9,12 @@
       nixpkgsFor = forAllSystems (system: import nixpkgs { inherit system; });
 
       builder = { pkgs, pname, src, subPackages, enableStatic ? false }: pkgs.buildGoModule {
-        inherit pname src vendorHash;
+        inherit pname src;
         version = "1.0.0";
+
+        # Replace with pkgs.lib.fakeHash if you bump go.mod and paste the
+        # resulting 'got' back here.
+        vendorHash = "sha256-zTqAqojXGrf3gAhDsFxZOKSV9WRpk64fA91LIGxsdm8=";
         proxyVendor = true;
         doCheck = false;
         subPackages = subPackages;
@@ -27,7 +31,6 @@
         '';
       };
 
-      vendorHash = "sha256-Wk08duA7FsC5l79uXRLYZkmfSlmG5e59VaPMYFlQSJo=";
 
     in
     {
@@ -48,7 +51,7 @@
             pname = "kapyserver";
             src = pkgs.lib.cleanSource ./.;
             subPackages = [ "kapyserver/cmd" ];
-            enableStatic = true;  # Enable static linking for kapyserver
+            enableStatic = true; # Enable static linking for kapyserver
           };
 
           panel = builder {
@@ -78,6 +81,20 @@
               templ.packages.${system}.templ
             ];
           };
+
+          apps = forAllSystems (
+            system:
+            let
+              pkgs = nixpkgsFor.${system};
+            in
+            {
+              panel = {
+                type = "app";
+                program = "${self.packages.${system}.panel}/bin/panel";
+                cwd = ./.;
+              };
+            }
+          );
         });
     };
 }

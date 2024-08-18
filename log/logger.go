@@ -9,8 +9,7 @@ import (
 // NewHandler sets up a new slog.Handler with the service name
 // as an attribute
 func NewHandler(name string) slog.Handler {
-	opts := slog.HandlerOptions{}
-	handler := slog.NewTextHandler(os.Stdout, &opts)
+	handler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{})
 
 	var attrs []slog.Attr
 	attrs = append(attrs, slog.Attr{Key: "svc", Value: slog.StringValue(name)})
