@@ -1,5 +1,9 @@
 package dashboard
 
+import "github.com/kapycluster/corpy/panel/views/components"
+
 templ Show() {
-    <h1>test</h1>
+    @components.Base() {
+        @components.Nav()
+    }
 }

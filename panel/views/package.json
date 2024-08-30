@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "preline": "^2.4.1"
+  },
+  "name": "panel",
+  "version": "1.0.0"
+}
