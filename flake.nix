@@ -8,6 +8,36 @@
       forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
       nixpkgsFor = forAllSystems (system: import nixpkgs { inherit system; });
 
+      nodeModules = with nixpkgsFor."x86_64-linux";
+        stdenv.mkDerivation {
+          pname = "panel-node-modules";
+          version = "0.0.1";
+          impureEnvVars =
+            lib.fetchers.proxyImpureEnvVars
+            ++ [ "GIT_PROXY_COMMAND" "SOCKS_SERVER" ];
+          src = ./.;
+          nativeBuildInputs = [ bun ];
+          buildInputs = [ nodejs-slim_latest ];
+          dontConfigure = true;
+          dontFixup = true;
+          buildPhase = ''
+            cd panel/views
+            bun install --no-progress --frozen-lockfile
+            cd ../..
+          '';
+          installPhase = ''
+            mkdir -p $out
+            ls -la
+            cp -R ./panel/views/node_modules $out/
+            ls -la $out/node_modules
+          '';
+          outputHash = "sha256-R+HRkjyJqUNLu5vQr5HPYVxz7ntQkPEA0e9ClBJ9oDg=";
+          outputHashAlgo = "sha256";
+          outputHashMode = "recursive";
+        };
+
+
+
       builder = { pkgs, pname, src, subPackages, enableStatic ? false }: pkgs.buildGoModule {
         inherit pname src;
         version = "1.0.0";
@@ -26,11 +56,20 @@
         nativeBuildInputs = pkgs.lib.optionals enableStatic [ pkgs.musl ];
         ldflags = pkgs.lib.optionals enableStatic [ "-s" "-w" ''-extldflags "-static -L${pkgs.musl}/lib"'' ];
 
+        preBuild =
+          if pname == "panel" then ''
+            cp -R ${nodeModules}/node_modules ./panel/views
+            cd ./panel
+            ${pkgs.tailwindcss}/bin/tailwindcss -c ./tailwind.config.js -i ./views/input.css -o ./views/static/style.css
+            cd ..
+            ${pkgs.templ}/bin/templ generate
+            ls -la ./panel/views
+          '' else null;
+
         postInstall = ''
           mv $out/bin/cmd $out/bin/${pname}
         '';
       };
-
 
     in
     {
@@ -79,6 +118,9 @@
               protoc-gen-go-grpc
               cni-plugins
               templ.packages.${system}.templ
+              tailwindcss
+              bun
+              nodePackages.nodejs
             ];
           };
 

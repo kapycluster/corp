@@ -2,3 +2,7 @@
 bin/*
 tmp/
 result
+*_templ.go
+node_modules
+bun.lockb
+panel/views/static/style.css
