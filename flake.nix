@@ -29,9 +29,8 @@
             mkdir -p $out
             ls -la
             cp -R ./panel/views/node_modules $out/
-            ls -la $out/node_modules
           '';
-          outputHash = "sha256-R+HRkjyJqUNLu5vQr5HPYVxz7ntQkPEA0e9ClBJ9oDg=";
+          outputHash = "sha256-PkeJkfUlmxjlOgkeghb5T136XIosk0UgJtozG8idCWE=";
           outputHashAlgo = "sha256";
           outputHashMode = "recursive";
         };
