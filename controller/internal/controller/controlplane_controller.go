@@ -67,6 +67,14 @@ func (r *ControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		// reconcile delete here
 	}
 
+	if kcp.Status.Initalized != kcp.Status.Ready {
+		l.Info("ControlPlane initialized but not ready, picking up from where we left off")
+		res, err := r.reconcileGRPCRequests(ctx, scope)
+		if err != nil {
+			return res, err
+		}
+	}
+
 	if kcp.Status.Ready {
 		l.Info("ControlPlane already reconciled", "name", scope.Name())
 		return ctrl.Result{}, nil
@@ -75,11 +83,6 @@ func (r *ControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	l.Info("creating control plane", "name", scope.Name(), "namespace", scope.Namespace())
 	if err := controlplane.Create(ctx, r.Client, scope); err != nil {
 		return ctrl.Result{}, fmt.Errorf("creation failed: %w", err)
-	}
-
-	kcp.Status.Ready = true
-	if err := scope.UpdateStatus(ctx, &kcp); err != nil {
-		return ctrl.Result{}, fmt.Errorf("failed to update status: %w", err)
 	}
 
 	l.Info("checking if kapyserver is up...")
@@ -92,45 +95,70 @@ func (r *ControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		return ctrl.Result{}, err
 	}
 
-	for {
-		if kapyDeploy.Status.Conditions == nil {
-			l.Info("kapyserver deployment conditions are not available yet...")
-			time.Sleep(5 * time.Second)
-			continue
-		}
+	// TODO: make this entire for loop a non-blocking op
+	if kapyDeploy.Status.Conditions == nil {
+		l.Info("kapyserver deployment conditions are not available yet...")
+		return ctrl.Result{RequeueAfter: 5 * time.Second}, nil
+	}
 
-		available := false
-		progressing := false
-		for _, condition := range kapyDeploy.Status.Conditions {
-			if condition.Type == appsv1.DeploymentAvailable && condition.Status == corev1.ConditionTrue {
-				available = true
-			}
-			if condition.Type == appsv1.DeploymentProgressing && condition.Status == corev1.ConditionTrue {
-				progressing = true
-			}
+	available := false
+	progressing := false
+	for _, condition := range kapyDeploy.Status.Conditions {
+		if condition.Type == appsv1.DeploymentAvailable && condition.Status == corev1.ConditionTrue {
+			available = true
 		}
-
-		if available && progressing {
-			l.Info("kapyserver deployment is healthy")
-			break
+		if condition.Type == appsv1.DeploymentProgressing && condition.Status == corev1.ConditionTrue {
+			progressing = true
 		}
+	}
 
-		fmt.Println("kapyserver deployment is not healthy yet")
-		time.Sleep(5 * time.Second)
+	if !(available && progressing) {
+		l.Info("kapyserver deployment is not healthy yet, requeuing...")
+		return ctrl.Result{RequeueAfter: 5 * time.Second}, nil
+	}
 
-		// Re-fetch the Deployment to get the latest status
-		err := r.Get(ctx, types.NamespacedName{
-			Name:      "kapyserver",
-			Namespace: scope.Namespace(),
-		}, kapyDeploy)
-		if err != nil {
-			return ctrl.Result{}, err
-		}
+	l.Info("kapyserver deployment is healthy")
+
+	// Re-fetch the Deployment to get the latest status
+	err = r.Get(ctx, types.NamespacedName{
+		Name:      "kapyserver",
+		Namespace: scope.Namespace(),
+	}, kapyDeploy)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	kcp.Status.Initalized = true
+	err = scope.UpdateStatus(ctx, &kcp)
+	if err != nil {
+		return ctrl.Result{}, fmt.Errorf("failed to update status: %w", err)
 	}
 
 	l.Info("letting kapyserver breathe a bit")
 	time.Sleep(5 * time.Second)
 
+	res, err := r.reconcileGRPCRequests(ctx, scope)
+	if err != nil {
+		return res, err
+	}
+
+	kcp.Status.Ready = true
+	if err := scope.UpdateStatus(ctx, &kcp); err != nil {
+		return ctrl.Result{}, fmt.Errorf("failed to update status: %w", err)
+	}
+
+	return ctrl.Result{}, nil
+}
+
+// SetupWithManager sets up the controller with the Manager.
+func (r *ControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	return ctrl.NewControllerManagedBy(mgr).
+		For(&kapyv1.ControlPlane{}).
+		Complete(r)
+}
+
+func (r *ControlPlaneReconciler) reconcileGRPCRequests(ctx context.Context, scope *scope.ControlPlaneScope) (ctrl.Result, error) {
+	l := log.FromContext(ctx)
 	l.Info("asking kapyserver for kubeconfig")
 	kapyclient, err := kapyclient.NewKapyClient("127.0.0.1:54545")
 	if err != nil {
@@ -188,11 +216,4 @@ func (r *ControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	}
 
 	return ctrl.Result{}, nil
-}
-
-// SetupWithManager sets up the controller with the Manager.
-func (r *ControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
-		For(&kapyv1.ControlPlane{}).
-		Complete(r)
 }

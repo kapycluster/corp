@@ -66,10 +66,14 @@ spec:
           status:
             description: ControlPlaneStatus defines the observed state of ControlPlane
             properties:
+              initalized:
+                description: Initalized is set when the Deployment is healthy
+                type: boolean
               ready:
                 description: Ready is set when the ControlPlane is ready to serve
                 type: boolean
             required:
+            - initalized
             - ready
             type: object
         type: object

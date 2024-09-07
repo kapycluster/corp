@@ -43,6 +43,8 @@ type ControlPlaneSpec struct {
 
 // ControlPlaneStatus defines the observed state of ControlPlane
 type ControlPlaneStatus struct {
+	// Initalized is set when the Deployment is healthy
+	Initalized bool `json:"initalized"`
 	// Ready is set when the ControlPlane is ready to serve
 	Ready bool `json:"ready"`
 }
