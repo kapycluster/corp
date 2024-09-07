@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "preline": "^2.4.1"
+    "htmx.org": "2.0.2"
   },
   "name": "panel",
   "version": "1.0.0"

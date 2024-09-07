@@ -1,0 +1,11 @@
+[build]
+pre_cmd = [
+    "tailwindcss -i ./views/input.css -o ./views/static/style.css",
+    "templ generate",
+]
+cmd = "go build -o panel ./cmd/main.go"
+bin = "panel"
+root = "."
+
+exclude_regex = [".*_templ.go"]
+include_ext = ["go", "templ"]

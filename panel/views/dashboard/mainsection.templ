@@ -1,0 +1,20 @@
+package dashboard
+
+templ MainSection(header string) {
+    <main class="container mx-auto pb-20 md:pb-24">
+    <section class="mb-24" id="dashboard-base">
+        <header class="flex gap-2">
+            <div class="flex-grow">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center">
+                    { header }
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-end items-end">
+                @createButton(buttonProps{Text: "Create", URL: "/dashboard/controlplanes/create"})
+            </div>
+        </header>
+    </section>
+    </main>
+}

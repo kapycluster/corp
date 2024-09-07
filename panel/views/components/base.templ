@@ -1,12 +1,21 @@
 package components
 
+
+templ head() {
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Dashboard &middot; Kapy Cluster</title>
+        <link rel="stylesheet" type="text/css" href="/static/style.css">
+    </head>
+}
+
 templ Base() {
     <html>
     @head()
     <body>
-    { children... }
-
-    <script src="/static/js/preline.js"></script>
+        { children... }
+    <script src="/static/js/htmx.min.js"></script>
     </body>
     </html>
 }

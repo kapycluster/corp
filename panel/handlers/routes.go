@@ -14,12 +14,16 @@ func Setup(ctx context.Context) *chi.Mux {
 	r.Use(middleware.RequestLogger(ctx))
 
 	dashboard := Dashboard{}
-	r.Get("/", dashboard.ShowDashboard)
+	r.Get("/dashboard", dashboard.ShowDashboard)
+	r.Get("/dashboard/*", dashboard.ShowDashboard)
+	r.Get("/dashboard/controlplanes/create", dashboard.CreateControlPlane)
+
 	r.Route("/static", func(r chi.Router) {
 		r.Handle("/style.css", http.FileServerFS(views.Style()))
+		prefix := "/static/js/"
 		r.Handle(
-			"/js/preline.js",
-			http.StripPrefix("/static/js/", http.FileServerFS(views.Preline())),
+			"/js/htmx.min.js",
+			http.StripPrefix(prefix, http.FileServerFS(views.HTMX())),
 		)
 	})
 

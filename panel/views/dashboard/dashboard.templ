@@ -1,9 +1,57 @@
 package dashboard
 
-import "github.com/kapycluster/corpy/panel/views/components"
+import (
+    "github.com/kapycluster/corpy/panel/views/components"
+    "github.com/kapycluster/corpy/panel/views/components/icons"
+)
 
-templ Show() {
+type buttonProps struct {
+  Text string
+  URL string
+}
+
+const btnClass = "py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
+
+templ createButton(props buttonProps) {
+    <a
+    class={ btnClass }
+    hx-get={ props.URL }
+    hx-target="#dashboard-base"
+    hx-swap="innerHTML"
+    >
+        { props.Text }
+        @icons.Create(2)
+    </a>
+}
+
+templ ControlPlanes() {
     @components.Base() {
-        @components.Nav()
+        @Nav(NavProps{
+            Title: "Dashboard",
+            Items: []NavItem{
+                {Icon: icons.Wheel(4), Name: "Control Planes", URL: "/dashboard/controlplanes", Current: true},
+                {Icon: icons.Settings(4), Name: "Access Control", URL: "/dashboard/access"},
+                {Icon: icons.Settings(4), Name: "Settings", URL: "/dashboard/settings"},
+            },
+        })
+        @MainSection("Control Planes") {
+            <p>foo</p>
+        }
     }
+}
+
+templ CreateControlPlane() {
+    <h1 class="text-3xl font-semibold tracking-tight leading-tight mb-2">Create a control plane</h1>
+    <p class="text-gray-600 dark:text-gray-300">
+        Create a new control plane to manage your Kubernetes cluster.
+    </p>
+    <div class="grid grid-cols-2 grid-gap-4 pt-20">
+    <div
+    class="container mx-auto border border-gray-300 rounded-lg shadow-sm space-y-6 py-10 px-10 my-auto"
+    >
+        @components.NamedInput("Control Plane Name")
+        @components.NamedInput("Foo")
+        @components.NamedInput("Bar")
+    </div>
+    </div>
 }
