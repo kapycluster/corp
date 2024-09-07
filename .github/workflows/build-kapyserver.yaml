@@ -40,7 +40,7 @@ jobs:
 
       - name: Build kapyserver binary
         run: |
-          CGO_ENABLED=0 go build \
+          CGO_ENABLED=1 go build \
             -buildvcs=false \
             -gcflags "all=" \
             -ldflags "-w -s -extldflags '-static -lm -ldl -lz -lpthread'" \
