@@ -73,6 +73,11 @@ func (r *ControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		if err != nil {
 			return res, err
 		}
+
+		kcp.Status.Ready = true
+		if err := scope.UpdateStatus(ctx, &kcp); err != nil {
+			return ctrl.Result{}, fmt.Errorf("failed to update status: %w", err)
+		}
 	}
 
 	if kcp.Status.Ready {
