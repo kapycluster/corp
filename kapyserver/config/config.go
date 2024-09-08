@@ -47,6 +47,7 @@ func NewServerConfig() (*ServerConfig, error) {
 	config.ControlConfig.Datastore.Endpoint = util.MustGetEnv(types.KapyServerDatastore)
 	config.ControlConfig.Datastore.NotifyInterval = 5 * time.Second
 	config.ControlConfig.BindAddress = config.ControlConfig.AdvertiseIP
+	config.ControlConfig.FlannelBackend = "wireguard-native"
 
 	config.ControlConfig.HTTPSPort = 6443
 	config.ControlConfig.SupervisorPort = config.ControlConfig.HTTPSPort
