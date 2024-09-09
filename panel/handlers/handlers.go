@@ -6,7 +6,9 @@ import (
 	"github.com/kapycluster/corpy/panel/views/dashboard"
 )
 
-type Dashboard struct{}
+type Dashboard struct {
+	cpc ControlPlaneClient
+}
 
 func (h Dashboard) ShowDashboard(w http.ResponseWriter, r *http.Request) {
 	dashboard.ControlPlanes().Render(r.Context(), w)

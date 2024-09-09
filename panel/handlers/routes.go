@@ -2,18 +2,28 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/kapycluster/corpy/panel/handlers/middleware"
+	"github.com/kapycluster/corpy/panel/kube"
 	"github.com/kapycluster/corpy/panel/views"
 )
 
-func Setup(ctx context.Context) *chi.Mux {
+func Setup(ctx context.Context) (*chi.Mux, error) {
 	r := chi.NewRouter()
 	r.Use(middleware.RequestLogger(ctx))
 
-	dashboard := Dashboard{}
+	k, err := kube.NewKube()
+	if err != nil {
+		return nil, fmt.Errorf("failed to create kube client: %w", err)
+	}
+
+	dashboard := Dashboard{
+		cpc: k,
+	}
+
 	r.Get("/dashboard", dashboard.ShowDashboard)
 	r.Get("/dashboard/*", dashboard.ShowDashboard)
 	r.Get("/dashboard/controlplanes/create", dashboard.CreateControlPlane)
@@ -27,5 +37,5 @@ func Setup(ctx context.Context) *chi.Mux {
 		)
 	})
 
-	return r
+	return r, nil
 }

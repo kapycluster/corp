@@ -69,7 +69,7 @@
               ls -la
               cp -R ./panel/views/node_modules $out/
             '';
-            outputHash = "sha256-ulbn/5gsg8+HllNDdSNtDCClgSEqA2kMCUVvMFPjCNI=";
+            outputHash = "sha256-A9CxkAKB9ofreelWxq+EYBBNoB+UvK1xBe70sz9LR2w=";
             outputHashAlgo = "sha256";
             outputHashMode = "recursive";
           };
