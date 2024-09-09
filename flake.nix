@@ -124,6 +124,7 @@
               nodePackages.nodejs
               gopls
               air
+              typescript-language-server
             ];
           };
         });
