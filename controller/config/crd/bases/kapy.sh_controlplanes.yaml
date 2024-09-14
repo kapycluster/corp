@@ -16,7 +16,28 @@ spec:
     singular: controlplane
   scope: Namespaced
   versions:
-  - name: v1
+  - additionalPrinterColumns:
+    - description: Kubernetes version
+      jsonPath: .spec.version
+      name: Version
+      type: string
+    - description: Load balancer address
+      jsonPath: .spec.LoadBalancerAddress
+      name: LB Address
+      type: string
+    - description: Control Plane is ready
+      jsonPath: .status.ready
+      name: Ready
+      type: boolean
+    - description: Deployment initialized
+      jsonPath: .status.initialized
+      name: Initialized
+      type: boolean
+    - description: Age
+      jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1
     schema:
       openAPIV3Schema:
         description: ControlPlane is the Schema for the controlplanes API
@@ -49,8 +70,10 @@ spec:
               server:
                 properties:
                   image:
+                    default: ghcr.io/kapycluster/kapyserver:master
                     type: string
                   persistence:
+                    default: sqlite
                     type: string
                   token:
                     type: string
@@ -59,9 +82,13 @@ spec:
                 - persistence
                 - token
                 type: object
+              version:
+                description: Version is the version of Kubernetes to deploy
+                type: string
             required:
             - network
             - server
+            - version
             type: object
           status:
             description: ControlPlaneStatus defines the observed state of ControlPlane

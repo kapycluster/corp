@@ -22,6 +22,7 @@ type Kube struct {
 	dynamic   dynamic.Interface
 }
 
+// NewKube creates a new Kube client
 func NewKube() (*Kube, error) {
 	restConfig, err := clientcmd.BuildConfigFromFlags("", os.Getenv("KUBECONFIG"))
 	if err != nil {

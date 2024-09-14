@@ -20,13 +20,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
 const ControlPlaneFinalizer = "controlplanes.kapy.sh/finalizer"
 
 type KapyServer struct {
-	Image       string `json:"image"`
+	// +kubebuilder:default="ghcr.io/kapycluster/kapyserver:master"
+	Image string `json:"image"`
+	// +kubebuilder:default="sqlite"
 	Persistence string `json:"persistence"`
 	Token       string `json:"token"`
 }
@@ -39,6 +38,9 @@ type Network struct {
 type ControlPlaneSpec struct {
 	Server  KapyServer `json:"server"`
 	Network Network    `json:"network"`
+
+	// Version is the version of Kubernetes to deploy
+	Version string `json:"version"`
 }
 
 // ControlPlaneStatus defines the observed state of ControlPlane
@@ -52,6 +54,11 @@ type ControlPlaneStatus struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:shortName=cp
+// +kubebuilder:printcolumn:name="Version",type="string",JSONPath=".spec.version",description="Kubernetes version"
+// +kubebuilder:printcolumn:name="LB Address",type="string",JSONPath=".spec.LoadBalancerAddress",description="Load balancer address"
+// +kubebuilder:printcolumn:name="Ready",type="boolean",JSONPath=".status.ready",description="Control Plane is ready"
+// +kubebuilder:printcolumn:name="Initialized",type="boolean",JSONPath=".status.initialized",description="Deployment initialized"
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp",description="Age"
 // ControlPlane is the Schema for the controlplanes API
 type ControlPlane struct {
 	metav1.TypeMeta   `json:",inline"`
