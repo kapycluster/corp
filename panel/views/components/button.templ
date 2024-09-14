@@ -1,0 +1,22 @@
+package components
+
+const defaultButtonClass = "bg-blue-0 hover:bg-blue-20 cursor-pointer text-white font-semibold py-2 px-4 items-center rounded inline-flex gap-x-2"
+
+type ButtonProps struct {
+	Text  string
+	Attrs templ.Attributes
+	Icon  templ.Component
+	Class string
+}
+
+templ Button(props ButtonProps) {
+	<a
+		class={ defaultButtonClass, props.Class }
+		{ props.Attrs... }
+	>
+		{ props.Text }
+		if props.Icon != nil {
+			@props.Icon
+		}
+	</a>
+}

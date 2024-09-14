@@ -1,0 +1,49 @@
+package dashboard
+
+import (
+	"github.com/kapycluster/corpy/panel/views/components"
+	"github.com/kapycluster/corpy/panel/views/components/icons"
+)
+
+templ ControlPlanes() {
+	@components.Base() {
+		@Nav(NavProps{
+			Title: "Dashboard",
+			Items: []NavItem{
+				{Icon: icons.Wheel(4), Name: "Control Planes", URL: "/controlplanes", Current: true},
+				{Icon: icons.Settings(4), Name: "Access Control", URL: "/access"},
+				{Icon: icons.Settings(4), Name: "Settings", URL: "/settings"},
+			},
+		})
+		@MainSection("Control Planes", "Manage your control planes. You can access your join URLs from here.") {
+			<div id="controlplanes-list"></div>
+		}
+	}
+}
+
+templ CreateControlPlaneForm() {
+	<header class="flex gap-2">
+		<div class="flex-grow">
+			<h1 class="mb-2">
+				Create a Control Plane
+			</h1>
+			<p class="text-gray-600 text-xl">
+				Create a new control plane to manage your Kubernetes cluster.
+			</p>
+		</div>
+	</header>
+	<form id="create-controlplane-form" onkeydown="if(event.keyCode === 13) {event.preventDefault();}">
+		<div class="grid grid-cols-1 grid-gap-4 pt-20">
+			@components.NamedInput("Name",
+				"Name of the control plane. Think of this as the name of your Kubernetes cluster.")
+		</div>
+		@components.Button(components.ButtonProps{
+			Text: "Create",
+			Attrs: templ.Attributes{
+				"type":    "submit",
+				"hx-post": "/controlplanes/create",
+			},
+			Class: "mt-10",
+		})
+	</form>
+}

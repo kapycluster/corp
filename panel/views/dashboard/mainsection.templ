@@ -1,20 +1,39 @@
 package dashboard
 
-templ MainSection(header string) {
-    <main class="container mx-auto pb-20 md:pb-24">
-    <section class="mb-24" id="dashboard-base">
-        <header class="flex gap-2">
-            <div class="flex-grow">
-                <div class="flex justify-between items-center">
-                    <div class="flex items-center">
-                    { header }
-                    </div>
-                </div>
-            </div>
-            <div class="flex justify-end items-end">
-                @createButton(buttonProps{Text: "Create", URL: "/dashboard/controlplanes/create"})
-            </div>
-        </header>
-    </section>
-    </main>
+import (
+	"github.com/kapycluster/corpy/panel/views/components"
+	"github.com/kapycluster/corpy/panel/views/components/icons"
+)
+
+templ MainSection(header, subtitle string) {
+	<main class="container mx-auto pb-20 md:pb-24">
+		<section class="mb-24" id="dashboard-base">
+			<header class="flex gap-2">
+				<div class="flex-grow">
+					<h1 class="mb-2">
+						{ header }
+					</h1>
+					if subtitle != "" {
+						<p class="text-gray-600 text-xl">
+							{ subtitle }
+						</p>
+					}
+				</div>
+				<div class="flex justify-end items-end pt-5">
+					@components.Button(components.ButtonProps{
+						Text: "Create",
+						Attrs: templ.Attributes{
+							"hx-get":         "/controlplanes/create",
+							"hx-target":      "#dashboard-base",
+							"hx-swap":        "innerHTML",
+							"hx-replace-url": "true",
+							"hx-push-url":    "true",
+						},
+						Icon: icons.Create(2),
+					})
+				</div>
+			</header>
+			{ children... }
+		</section>
+	</main>
 }
