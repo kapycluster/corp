@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/kapycluster/corpy/log"
 	"github.com/kapycluster/corpy/panel/handlers/middleware"
 	"github.com/kapycluster/corpy/panel/kube"
 	"github.com/kapycluster/corpy/panel/store"
@@ -27,18 +28,21 @@ func Setup(ctx context.Context) (*chi.Mux, error) {
 	}
 
 	dashboard := Dashboard{
-		kc: kubeClient,
-		db: dbStore,
+		kc:  kubeClient,
+		db:  dbStore,
+		log: log.FromContext(ctx),
 	}
 
-	r.Route("/dashboard", func(r chi.Router) {
-		r.Get("/", dashboard.ShowDashboard)
-		r.Get("/*", dashboard.ShowDashboard)
-		r.Get("/controlplanes/create", dashboard.ShowCreateControlPlaneForm)
-
-		r.Post("/controlplanes/create", dashboard.HandleCreateControlPlaneForm)
+	r.Route("/", func(r chi.Router) {
+		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+			http.Redirect(w, r, "/controlplanes", http.StatusMovedPermanently)
+		})
+		r.Route("/controlplanes", func(r chi.Router) {
+			r.Get("/", dashboard.ShowDashboard)
+			r.Get("/create", dashboard.ShowCreateControlPlaneForm)
+			r.Post("/create", dashboard.HandleCreateControlPlaneForm)
+		})
 	})
-
 	r.Route("/static", func(r chi.Router) {
 		r.Handle("/style.css", http.FileServerFS(views.Style()))
 		prefix := "/static/js/"

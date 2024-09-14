@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log/slog"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -11,8 +12,9 @@ import (
 )
 
 type Dashboard struct {
-	kc KubeClient
-	db DBStore
+	kc  KubeClient
+	db  DBStore
+	log *slog.Logger
 }
 
 func (h Dashboard) ShowDashboard(w http.ResponseWriter, r *http.Request) {
@@ -29,20 +31,28 @@ func (h Dashboard) HandleCreateControlPlaneForm(w http.ResponseWriter, r *http.R
 			Namespace: namespace,
 		},
 		Spec: kapyv1.ControlPlaneSpec{
+			Version: "v1.30",
 			Server: kapyv1.KapyServer{
 				Token: "dummy",
 			},
 		},
 	}
 
-	if err := h.kc.CreateControlPlane(r.Context(), cp); err != nil {
-		// TODO: make this a templ error component
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	h.log.Info("creating control plane!", slog.String("name", name), slog.String("namespace", namespace))
+	if err := h.kc.CreateControlPlane(r.Context(), cp); err == nil {
+		w.Header().Set("Hx-Redirect", "/controlplanes")
+		w.WriteHeader(http.StatusOK)
+	} else {
+		h.log.Error(err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 
 }
 
 func (h Dashboard) ShowCreateControlPlaneForm(w http.ResponseWriter, r *http.Request) {
-	dashboard.CreateControlPlane().Render(r.Context(), w)
+	if r.Header.Get("hx-request") != "" {
+		dashboard.CreateControlPlaneForm().Render(r.Context(), w)
+	} else {
+		http.Redirect(w, r, "/controlplanes", http.StatusSeeOther)
+	}
 }
