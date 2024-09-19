@@ -124,6 +124,8 @@
               nodePackages.nodejs
               gopls
               air
+              gcc
+              nixd
             ];
           };
         });
