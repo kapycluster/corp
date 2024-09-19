@@ -7,21 +7,25 @@ import (
 	"github.com/google/uuid"
 
 	kapyv1 "github.com/kapycluster/corpy/controller/api/v1"
+	"github.com/kapycluster/corpy/panel/auth"
+	"github.com/kapycluster/corpy/panel/config"
 	"github.com/kapycluster/corpy/panel/views/dashboard"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-type Dashboard struct {
-	kc  KubeClient
-	db  DBStore
-	log *slog.Logger
+type Handler struct {
+	kc   KubeClient
+	db   DBStore
+	log  *slog.Logger
+	c    *config.Config
+	auth *auth.Auth
 }
 
-func (h Dashboard) ShowDashboard(w http.ResponseWriter, r *http.Request) {
+func (h Handler) ShowDashboard(w http.ResponseWriter, r *http.Request) {
 	dashboard.ControlPlanes().Render(r.Context(), w)
 }
 
-func (h Dashboard) HandleCreateControlPlaneForm(w http.ResponseWriter, r *http.Request) {
+func (h Handler) HandleCreateControlPlaneForm(w http.ResponseWriter, r *http.Request) {
 	name := r.FormValue("name")
 	namespace := uuid.New().String()
 
@@ -49,7 +53,7 @@ func (h Dashboard) HandleCreateControlPlaneForm(w http.ResponseWriter, r *http.R
 
 }
 
-func (h Dashboard) ShowCreateControlPlaneForm(w http.ResponseWriter, r *http.Request) {
+func (h Handler) ShowCreateControlPlaneForm(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("hx-request") != "" {
 		dashboard.CreateControlPlaneForm().Render(r.Context(), w)
 	} else {

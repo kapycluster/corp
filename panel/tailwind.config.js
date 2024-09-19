@@ -19,7 +19,11 @@ module.exports = {
         serif: ["Instrument Serif", "ui-serif", "serif"],
       },
       colors: {
-        light: "#f4f4f4",
+        light: {
+          0: "#f4f4f4",
+          10: "#e9e9e9",
+          20: "#dedede",
+        },
         red: "#db7070",
         green: "#7c9f4b",
         yellow: "#d69822",

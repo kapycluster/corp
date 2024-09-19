@@ -144,7 +144,7 @@ func NewServerConfig() (*ServerConfig, error) {
 	config.ControlConfig.CipherSuites = tlsCipherSuites
 	config.ControlConfig.TLSCipherSuites, err = kubeapiserverflag.TLSCipherSuites(tlsCipherSuites)
 	if err != nil {
-		return nil, fmt.Errorf("invalid tls cipher suites", err)
+		return nil, fmt.Errorf("invalid tls cipher suites: %w", err)
 	}
 
 	config.ControlConfig.Runtime = daemonsconfig.NewRuntime(ContainerRuntimeReady)

@@ -15,7 +15,8 @@ templ ControlPlanes() {
 				{Icon: icons.Settings(4), Name: "Settings", URL: "/settings"},
 			},
 		})
-		@MainSection("Control Planes", "Manage your control planes. You can access your join URLs from here.") {
+		@MainSection("Control Planes",
+			"Manage your control planes. You can access your join URLs and kubeconfigs from here.") {
 			<div id="controlplanes-list"></div>
 		}
 	}
@@ -37,13 +38,22 @@ templ CreateControlPlaneForm() {
 			@components.NamedInput("Name",
 				"Name of the control plane. Think of this as the name of your Kubernetes cluster.")
 		</div>
-		@components.Button(components.ButtonProps{
-			Text: "Create",
-			Attrs: templ.Attributes{
-				"type":    "submit",
-				"hx-post": "/controlplanes/create",
-			},
-			Class: "mt-10",
-		})
+		<div class="flex justify-start gap-4">
+			@components.Button(components.ButtonProps{
+				Text: "Create",
+				Attrs: templ.Attributes{
+					"type":    "submit",
+					"hx-post": "/controlplanes/create",
+				},
+				Class: "mt-10",
+			})
+			@components.GrayButton(components.ButtonProps{
+				Text: "Cancel",
+				Attrs: templ.Attributes{
+					"href": "/controlplanes",
+				},
+				Class: "mt-10",
+			})
+		</div>
 	</form>
 }

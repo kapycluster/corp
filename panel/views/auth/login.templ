@@ -1,0 +1,20 @@
+package auth
+
+import (
+	"github.com/kapycluster/corpy/panel/views/components"
+	"github.com/kapycluster/corpy/panel/views/components/icons"
+)
+
+templ Login() {
+	@components.Base() {
+		<div class="container flex justify-center mt-20">
+			@components.GrayButton(components.ButtonProps{
+				Text: "Sign in with GitHub",
+				Icon: icons.GitHub(2),
+				Attrs: templ.Attributes{
+					"href": "/auth/github",
+				},
+			})
+		</div>
+	}
+}

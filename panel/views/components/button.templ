@@ -1,6 +1,7 @@
 package components
 
-const defaultButtonClass = "bg-blue-0 hover:bg-blue-20 cursor-pointer text-white font-semibold py-2 px-4 items-center rounded inline-flex gap-x-2"
+const defaultButtonClass = "bg-blue-0 border border-blue-0 hover:border-blue-0 hover:bg-blue-20 cursor-pointer text-white font-semibold py-2 px-4 items-center rounded inline-flex gap-x-2"
+const grayButtonClass = "bg-light-0 border border-light-20 hover:bg-light-10 hover:border-light-20 hover:text-gray-900 font-semibold py-2 px-4 items-center rounded inline-flex gap-x-2"
 
 type ButtonProps struct {
 	Text  string
@@ -12,6 +13,18 @@ type ButtonProps struct {
 templ Button(props ButtonProps) {
 	<a
 		class={ defaultButtonClass, props.Class }
+		{ props.Attrs... }
+	>
+		{ props.Text }
+		if props.Icon != nil {
+			@props.Icon
+		}
+	</a>
+}
+
+templ GrayButton(props ButtonProps) {
+	<a
+		class={ grayButtonClass, props.Class }
 		{ props.Attrs... }
 	>
 		{ props.Text }
