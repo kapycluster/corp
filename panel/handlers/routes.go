@@ -46,6 +46,8 @@ func Setup(ctx context.Context, config *config.Config) (*chi.Mux, error) {
 		auth: auth,
 	}
 
+	// Show* functions render templ templates.
+	// Handle* functions handle form submissions/affect the state of the application.
 	r.Route("/", func(r chi.Router) {
 		r.Use(middleware.RequestLogger(ctx))
 		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
@@ -62,7 +64,7 @@ func Setup(ctx context.Context, config *config.Config) (*chi.Mux, error) {
 		r.Route("/auth/", func(r chi.Router) {
 			r.Get("/{provider}", handler.HandleProviderLogin)
 			r.Get("/{provider}/callback", handler.HandleProviderCallback)
-			// r.Get("/{provider}/logout", nil)
+			r.Get("/{provider}/logout", handler.HandleLogout)
 			r.Get("/login", handler.ShowLogin)
 		})
 
@@ -74,6 +76,10 @@ func Setup(ctx context.Context, config *config.Config) (*chi.Mux, error) {
 		r.Handle(
 			"/js/htmx.min.js",
 			http.StripPrefix(prefix, http.FileServerFS(views.HTMX())),
+		)
+		r.Handle(
+			"/js/cdn.min.js",
+			http.StripPrefix(prefix, http.FileServerFS(views.Alpine())),
 		)
 	})
 

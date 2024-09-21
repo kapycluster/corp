@@ -70,6 +70,16 @@ func (a *Auth) GetSessionUser(r *http.Request) (goth.User, error) {
 	return u, nil
 }
 
+func (a *Auth) ClearUserSession(w http.ResponseWriter, r *http.Request) error {
+	s, err := gothic.Store.Get(r, SessionName)
+	if err != nil {
+		return err
+	}
+
+	s.Values["user"] = nil
+	return s.Save(r, w)
+}
+
 func buildCallbackURL(provider string, c *config.Config) string {
 	return fmt.Sprintf("%s/auth/%s/callback", c.Server.BaseURL, provider)
 }

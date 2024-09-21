@@ -22,7 +22,12 @@ type Handler struct {
 }
 
 func (h Handler) ShowDashboard(w http.ResponseWriter, r *http.Request) {
-	dashboard.ControlPlanes().Render(r.Context(), w)
+	u, err := h.auth.GetSessionUser(r)
+	if err != nil {
+		http.Redirect(w, r, "/auth/login", http.StatusTemporaryRedirect)
+	}
+
+	dashboard.ControlPlanes(u).Render(r.Context(), w)
 }
 
 func (h Handler) HandleCreateControlPlaneForm(w http.ResponseWriter, r *http.Request) {

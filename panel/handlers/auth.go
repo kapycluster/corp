@@ -7,7 +7,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/kapycluster/corpy/panel/views"
 	authview "github.com/kapycluster/corpy/panel/views/auth"
-	"github.com/kapycluster/corpy/panel/views/dashboard"
 )
 
 func (h Handler) ShowLogin(w http.ResponseWriter, r *http.Request) {
@@ -23,10 +22,19 @@ func (h Handler) HandleProviderLogin(w http.ResponseWriter, r *http.Request) {
 	r = r.WithContext(context.WithValue(r.Context(), "provider", provider))
 	if _, err := h.auth.CompleteUserAuth(w, r); err == nil {
 		// user logged in
-		dashboard.ControlPlanes().Render(r.Context(), w)
+		http.Redirect(w, r, "/controlplanes", http.StatusSeeOther)
 	} else {
 		h.auth.BeginAuthHandler(w, r)
 	}
+}
+
+func (h Handler) HandleLogout(w http.ResponseWriter, r *http.Request) {
+	err := h.auth.ClearUserSession(w, r)
+	if err != nil {
+		views.Error("failed to clear user session").Render(r.Context(), w)
+		return
+	}
+	http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
 }
 
 func (h Handler) HandleProviderCallback(w http.ResponseWriter, r *http.Request) {
