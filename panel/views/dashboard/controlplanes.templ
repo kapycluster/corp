@@ -1,12 +1,25 @@
 package dashboard
 
 import (
+	"fmt"
 	"github.com/kapycluster/corpy/panel/views/components"
 	"github.com/kapycluster/corpy/panel/views/components/icons"
+	"github.com/markbates/goth"
 )
 
-templ ControlPlanes() {
+func logoutURL(provider string) string {
+	return fmt.Sprintf("auth/%s/logout", provider)
+}
+
+templ ControlPlanes(user goth.User) {
 	@components.Base() {
+		@Header(HeaderProps{
+			Avatar: user.AvatarURL,
+			User:   user.Name,
+			Links: []components.DropdownItem{
+				{Name: "Logout", URL: logoutURL(user.Provider)},
+			},
+		})
 		@Nav(NavProps{
 			Title: "Dashboard",
 			Items: []NavItem{

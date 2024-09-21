@@ -1,0 +1,38 @@
+package components
+
+type DropdownProps struct {
+	Items  []DropdownItem
+	Button templ.Component
+}
+
+type DropdownItem struct {
+	Name  string
+	URL   string
+	Attrs templ.Attributes
+}
+
+templ Dropdown(props DropdownProps) {
+	<div class="relative inline-flex" x-data="{ open: false }">
+		@props.Button
+		<div
+			x-transition:enter="transition ease-out duration-100"
+			x-transition:enter-start="-translate-y-2"
+			x-transition:enter-end="translate-y-0"
+			x-transition:leave="transition ease-in duration-100"
+			x-transition:leave-start="translate-y-0"
+			x-transition:leave-end="-translate-y-2"
+			x-cloak
+			x-show="open"
+			@click.outside="open = false"
+			class="absolute top-full left-1/2 -translate-x-1/2 w-48 border border-light rounded shadow-sm p-2 bg-light z-50 mt-2"
+		>
+			for _, item := range props.Items {
+				<a
+					href={ templ.SafeURL(item.URL) }
+					{ item.Attrs... }
+					class="w-full flex hover:bg-light-10 rounded-md p-2 text-gray-900"
+				>{ item.Name }</a>
+			}
+		</div>
+	</div>
+}

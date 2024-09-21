@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "alpinejs": "^3.14.1",
     "htmx.org": "2.0.2"
   },
   "name": "panel",

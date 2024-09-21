@@ -1,5 +1,7 @@
 package dashboard
 
+import "github.com/kapycluster/corpy/panel/views/components"
+
 type NavItem struct {
 	Name    string
 	URL     string
@@ -16,7 +18,7 @@ const navClass = "navigation flex items-center overflow-auto px-5 left-5 relativ
 const aClass = "py-4 px-1 inline-flex items-center gap-2 border-b-2 text-lg whitespace-nowrap hover:text-blue-20 focus:outline-none focus:text-blue-20"
 
 templ Nav(props NavProps) {
-	<div class="bg-light border-b pt-10 mb-6">
+	<div class="bg-light border-b mt-4 mb-6">
 		<div class="relative overflow-hidden" style="top: 1px;">
 			<nav class={ navClass }>
 				<div class="flex justify-between w-full">
@@ -36,5 +38,46 @@ templ Nav(props NavProps) {
 				</div>
 			</nav>
 		</div>
+	</div>
+}
+
+type HeaderProps struct {
+	User   string
+	Avatar string
+	Links  []components.DropdownItem
+}
+
+func bgImage(trustedURL string) templ.SafeCSSProperty {
+	return templ.SafeCSSProperty("url(" + trustedURL + ")")
+}
+
+css avatar(image string) {
+	background-image: { bgImage(image) };
+}
+
+templ avatarButton(url string) {
+	<button class="relative rounded-full" type="button" id="radix-:r0:" @click="open = ! open">
+		<div class="relative shrink-0 rounded-full overflow-hidden transition-all duration-300 w-8 h-8">
+			<div class={ "w-full h-full bg-cover bg-center", avatar(url) }></div>
+			<div class="absolute inset-0 w-full h-full rounded-full"></div>
+		</div>
+	</button>
+}
+
+templ Header(props HeaderProps) {
+	<div class="container mx-auto pt-4 mb-02 md:mb-4">
+		<header class="flex justify-between items-center md:px-0">
+			<div class="flex items-center" style="max-width: 100%;">
+				<a href="/controlplanes" class="flex items-center">
+					<div role="banner" class="text-lg font-semibold truncate">{ props.User }</div>
+				</a>
+			</div>
+			<nav class="flex items-center">
+				@components.Dropdown(components.DropdownProps{
+					Items:  props.Links,
+					Button: avatarButton(props.Avatar),
+				})
+			</nav>
+		</header>
 	</div>
 }
