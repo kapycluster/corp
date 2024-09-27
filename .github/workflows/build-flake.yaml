@@ -1,0 +1,28 @@
+name: build nix flake
+
+on:
+  push:
+    branches:
+      - "master"
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v29
+
+      - name: Build panel
+        run: nix build .#panel
+
+      - name: Build controller
+        run: nix build .#controller
+
+      - name: Build kapyserver
+        run: nix build .#kapyserver
