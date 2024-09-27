@@ -15,10 +15,10 @@ templ Dropdown(props DropdownProps) {
 	<div class="relative inline-flex" x-data="{ open: false }">
 		@props.Button
 		<div
-			x-transition:enter="transition ease-out duration-100"
+			x-transition:enter="transition ease-out duration-50"
 			x-transition:enter-start="-translate-y-2"
 			x-transition:enter-end="translate-y-0"
-			x-transition:leave="transition ease-in duration-100"
+			x-transition:leave="transition ease-in duration-50"
 			x-transition:leave-start="translate-y-0"
 			x-transition:leave-end="-translate-y-2"
 			x-cloak

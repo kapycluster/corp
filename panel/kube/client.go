@@ -11,6 +11,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -53,15 +54,16 @@ func NewKube() (*Kube, error) {
 	return &Kube{clientset: clientset, client: client, dynamic: dynamic}, nil
 }
 
-func (k *Kube) CreateControlPlane(ctx context.Context, cp kapyv1.ControlPlane) error {
+func (k *Kube) CreateControlPlane(ctx context.Context, cp ControlPlane) error {
+	kcp := cp.ToKubeObject()
 	namespaceObj := &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: cp.Namespace,
+			Name: kcp.Namespace,
 		},
 	}
 
-	cp.Spec.Server.Image = "ghcr.io/kapycluster/kapyserver:master"
-	cp.Spec.Server.Persistence = "sqlite"
+	kcp.Spec.Server.Image = "ghcr.io/kapycluster/kapyserver:master"
+	kcp.Spec.Server.Persistence = "sqlite"
 
 	var err error
 
@@ -70,25 +72,26 @@ func (k *Kube) CreateControlPlane(ctx context.Context, cp kapyv1.ControlPlane) e
 		return fmt.Errorf("failed to create namespace: %w", err)
 	}
 
-	err = k.client.Create(ctx, &cp)
+	err = k.client.Create(ctx, kcp)
 	if err != nil {
-		go k.cleanup(ctx, cp)
+		go k.cleanup(ctx, *kcp)
 		return fmt.Errorf("failed to create ControlPlane: %w", err)
 	}
 	return nil
 }
 
-func (k *Kube) WatchControlPlane(ctx context.Context, cp kapyv1.ControlPlane) (<-chan bool, error) {
+func (k *Kube) WatchControlPlane(ctx context.Context, cp ControlPlane) (<-chan bool, error) {
+	kcp := cp.ToKubeObject()
 	watcher := cache.NewListWatchFromClient(
 		k.clientset.CoreV1().RESTClient(),
 		"controlplanes",
-		cp.Namespace,
-		fields.OneTermEqualSelector(metav1.ObjectNameField, cp.Name),
+		kcp.Namespace,
+		fields.OneTermEqualSelector(metav1.ObjectNameField, kcp.Name),
 	)
 
 	isReady := make(chan bool)
 
-	_, informer := cache.NewInformer(watcher, &cp, time.Second*0,
+	_, informer := cache.NewInformer(watcher, kcp, time.Second*0,
 		cache.ResourceEventHandlerFuncs{
 			UpdateFunc: func(oldObj, newObj interface{}) {
 				if newObj.(*kapyv1.ControlPlane).Status.Ready {
@@ -125,22 +128,22 @@ func (k *Kube) WatchControlPlane(ctx context.Context, cp kapyv1.ControlPlane) (<
 	return isReady, nil
 }
 
-func (k *Kube) UpdateControlPlane(ctx context.Context, cp kapyv1.ControlPlane) error {
+func (k *Kube) UpdateControlPlane(ctx context.Context, cp ControlPlane) error {
 	return nil
 }
 
-func (k *Kube) DeleteControlPlane(ctx context.Context, cp kapyv1.ControlPlane) error {
+func (k *Kube) DeleteControlPlane(ctx context.Context, cp ControlPlane) error {
 	return nil
 }
 
-func (k *Kube) GetControlPlane(ctx context.Context, namespace, name string) (*kapyv1.ControlPlane, error) {
-	cp := &kapyv1.ControlPlane{}
-	err := k.client.Get(ctx, client.ObjectKey{Namespace: namespace, Name: name}, cp)
+func (k *Kube) GetControlPlane(ctx context.Context, cp ControlPlane) (*ControlPlane, error) {
+	kcp := &kapyv1.ControlPlane{}
+	err := k.client.Get(ctx, client.ObjectKey{Namespace: cp.ID, Name: cp.Name}, kcp)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get ControlPlane: %w", err)
 	}
 
-	return cp, nil
+	return FromKubeObject(kcp), nil
 }
 
 func (k *Kube) cleanup(ctx context.Context, cp kapyv1.ControlPlane) error {
@@ -155,4 +158,25 @@ func (k *Kube) cleanup(ctx context.Context, cp kapyv1.ControlPlane) error {
 	}
 
 	return nil
+}
+
+func (k *Kube) ListControlPlanes(ctx context.Context, userID string) ([]*ControlPlane, error) {
+	listOpts := client.ListOptions{
+		LabelSelector: labels.SelectorFromSet(labels.Set{
+			labelUserID: userID,
+		}),
+	}
+	list := &kapyv1.ControlPlaneList{}
+	err := k.client.List(ctx, list, &listOpts)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list ControlPlanes: %w", err)
+	}
+
+	cps := make([]*ControlPlane, 0, len(list.Items))
+
+	for _, cp := range list.Items {
+		cps = append(cps, FromKubeObject(&cp))
+	}
+
+	return cps, nil
 }

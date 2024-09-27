@@ -3,15 +3,17 @@ package handlers
 import (
 	"context"
 
-	kapyv1 "github.com/kapycluster/corpy/controller/api/v1"
+	"github.com/kapycluster/corpy/panel/kube"
 	"github.com/kapycluster/corpy/panel/model"
 )
 
 type KubeClient interface {
-	CreateControlPlane(ctx context.Context, cp kapyv1.ControlPlane) error
-	UpdateControlPlane(ctx context.Context, cp kapyv1.ControlPlane) error
-	DeleteControlPlane(ctx context.Context, cp kapyv1.ControlPlane) error
-	WatchControlPlane(ctx context.Context, cp kapyv1.ControlPlane) (<-chan bool, error)
+	CreateControlPlane(ctx context.Context, cp kube.ControlPlane) error
+	UpdateControlPlane(ctx context.Context, cp kube.ControlPlane) error
+	DeleteControlPlane(ctx context.Context, cp kube.ControlPlane) error
+	WatchControlPlane(ctx context.Context, cp kube.ControlPlane) (<-chan bool, error)
+	GetControlPlane(ctx context.Context, cp kube.ControlPlane) (*kube.ControlPlane, error)
+	ListControlPlanes(ctx context.Context, userID string) ([]*kube.ControlPlane, error)
 }
 
 type DBStore interface {

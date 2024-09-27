@@ -48,6 +48,7 @@ func Setup(ctx context.Context, config *config.Config) (*chi.Mux, error) {
 
 	// Show* functions render templ templates.
 	// Handle* functions handle form submissions/affect the state of the application.
+	// Fetch* functions fetch data from the database or other sources.
 	r.Route("/", func(r chi.Router) {
 		r.Use(middleware.RequestLogger(ctx))
 		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
@@ -59,6 +60,7 @@ func Setup(ctx context.Context, config *config.Config) (*chi.Mux, error) {
 			r.Get("/", handler.ShowDashboard)
 			r.Get("/create", handler.ShowCreateControlPlaneForm)
 			r.Post("/create", handler.HandleCreateControlPlaneForm)
+			// r.Get("/controlplane/{id}", handler.FetchControlPlaneInfo)
 		})
 
 		r.Route("/auth/", func(r chi.Router) {

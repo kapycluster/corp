@@ -7,14 +7,13 @@ import (
 
 templ Login() {
 	@components.Base() {
+	<form action="/auth/github">
 		<div class="container flex justify-center mt-20">
 			@components.GrayButton(components.ButtonProps{
 				Text: "Sign in with GitHub",
 				Icon: icons.GitHub(2),
-				Attrs: templ.Attributes{
-					"href": "/auth/github",
-				},
 			})
 		</div>
+	</form>
 	}
 }

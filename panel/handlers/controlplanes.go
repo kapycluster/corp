@@ -6,45 +6,36 @@ import (
 
 	"github.com/google/uuid"
 
-	kapyv1 "github.com/kapycluster/corpy/controller/api/v1"
-	"github.com/kapycluster/corpy/panel/auth"
-	"github.com/kapycluster/corpy/panel/config"
+	"github.com/kapycluster/corpy/panel/kube"
+	"github.com/kapycluster/corpy/panel/views"
 	"github.com/kapycluster/corpy/panel/views/dashboard"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-type Handler struct {
-	kc   KubeClient
-	db   DBStore
-	log  *slog.Logger
-	c    *config.Config
-	auth *auth.Auth
-}
-
 func (h Handler) ShowDashboard(w http.ResponseWriter, r *http.Request) {
-	u, err := h.auth.GetSessionUser(r)
+	u := h.MustGetUser(w, r)
+	list, err := h.kc.ListControlPlanes(r.Context(), u.UserID)
 	if err != nil {
-		http.Redirect(w, r, "/auth/login", http.StatusTemporaryRedirect)
+		h.log.Error(err.Error())
+		views.Error("failed to get control plane list").Render(r.Context(), w)
+		return
 	}
 
-	dashboard.ControlPlanes(u).Render(r.Context(), w)
+	dashboard.ControlPlanes(u, list).Render(r.Context(), w)
 }
 
 func (h Handler) HandleCreateControlPlaneForm(w http.ResponseWriter, r *http.Request) {
 	name := r.FormValue("name")
 	namespace := uuid.New().String()
 
-	cp := kapyv1.ControlPlane{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-		},
-		Spec: kapyv1.ControlPlaneSpec{
-			Version: "v1.30",
-			Server: kapyv1.KapyServer{
-				Token: "dummy",
-			},
-		},
+	user := h.MustGetUser(w, r)
+	if user.UserID == "" {
+		return
+	}
+
+	cp := kube.ControlPlane{
+		Name:   name,
+		ID:     namespace,
+		UserID: user.UserID,
 	}
 
 	h.log.Info("creating control plane!", slog.String("name", name), slog.String("namespace", namespace))

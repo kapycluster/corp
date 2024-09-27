@@ -18,7 +18,7 @@ const navClass = "navigation flex items-center overflow-auto px-5 left-5 relativ
 const aClass = "py-4 px-1 inline-flex items-center gap-2 border-b-2 text-lg whitespace-nowrap hover:text-blue-20 focus:outline-none focus:text-blue-20"
 
 templ Nav(props NavProps) {
-	<div class="bg-light border-b mt-4 mb-6">
+	<div class="border-b mt-4 mb-6">
 		<div class="relative overflow-hidden" style="top: 1px;">
 			<nav class={ navClass }>
 				<div class="flex justify-between w-full">
@@ -69,7 +69,7 @@ templ Header(props HeaderProps) {
 		<header class="flex justify-between items-center md:px-0">
 			<div class="flex items-center" style="max-width: 100%;">
 				<a href="/controlplanes" class="flex items-center">
-					<div role="banner" class="text-lg font-semibold truncate">{ props.User }</div>
+					<div role="banner" class="text-lg text-gray-900 font-semibold truncate">{ props.User }</div>
 				</a>
 			</div>
 			<nav class="flex items-center">
@@ -79,5 +79,12 @@ templ Header(props HeaderProps) {
 				})
 			</nav>
 		</header>
+	</div>
+}
+
+templ NavHeader(hp HeaderProps, np NavProps) {
+	<div class="bg-light-0">
+		@Header(hp)
+		@Nav(np)
 	</div>
 }

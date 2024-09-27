@@ -2,6 +2,7 @@ package dashboard
 
 import (
 	"fmt"
+	"github.com/kapycluster/corpy/panel/kube"
 	"github.com/kapycluster/corpy/panel/views/components"
 	"github.com/kapycluster/corpy/panel/views/components/icons"
 	"github.com/markbates/goth"
@@ -11,28 +12,81 @@ func logoutURL(provider string) string {
 	return fmt.Sprintf("auth/%s/logout", provider)
 }
 
-templ ControlPlanes(user goth.User) {
+templ ControlPlanes(user goth.User, controlPlanes []*kube.ControlPlane) {
 	@components.Base() {
-		@Header(HeaderProps{
-			Avatar: user.AvatarURL,
-			User:   user.Name,
-			Links: []components.DropdownItem{
-				{Name: "Logout", URL: logoutURL(user.Provider)},
+		@NavHeader(
+			HeaderProps{
+				Avatar: user.AvatarURL,
+				User:   user.Name,
+				Links: []components.DropdownItem{
+					{Name: "Logout", URL: logoutURL(user.Provider)},
+				},
 			},
-		})
-		@Nav(NavProps{
-			Title: "Dashboard",
-			Items: []NavItem{
-				{Icon: icons.Wheel(4), Name: "Control Planes", URL: "/controlplanes", Current: true},
-				{Icon: icons.Settings(4), Name: "Access Control", URL: "/access"},
-				{Icon: icons.Settings(4), Name: "Settings", URL: "/settings"},
+			NavProps{
+				Title: "Dashboard",
+				Items: []NavItem{
+					{Icon: icons.Wheel(4), Name: "Control Planes", URL: "/controlplanes", Current: true},
+					{Icon: icons.Settings(4), Name: "Access Control", URL: "/access"},
+					{Icon: icons.Settings(4), Name: "Settings", URL: "/settings"},
+				},
 			},
-		})
+		)
 		@MainSection("Control Planes",
 			"Manage your control planes. You can access your join URLs and kubeconfigs from here.") {
-			<div id="controlplanes-list"></div>
+			<div class="flex flex-col pt-10">
+				<div class="-m-1.5 overflow-x-auto">
+					<div class="p-1.5 min-w-full inline-block align-middle">
+						<div class="overflow-hidden">
+							<table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
+								<thead>
+									<tr>
+										<th scope="col" class="px-1 py-3 text-start text-sm font-medium text-gray-500 uppercase dark:text-neutral-500">Name</th>
+										<th scope="col" class="px-1 py-3 text-start text-sm font-medium text-gray-500 uppercase dark:text-neutral-500">Status</th>
+										<th scope="col" class="px-1 py-3 text-start text-sm font-medium text-gray-500 uppercase dark:text-neutral-500">Join URL</th>
+										<th scope="col" class="px-1 py-3 text-start text-sm font-medium text-gray-500 uppercase dark:text-neutral-500">Version</th>
+									</tr>
+								</thead>
+								<tbody class="divide-y divide-gray-200 dark:divide-neutral-700">
+									for _, controlPlane := range controlPlanes {
+										<tr class="hover:bg-light-0">
+											@controlPlaneRow(controlPlane)
+										</tr>
+									}
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
 		}
 	}
+}
+
+templ controlPlaneRow(controlPlane *kube.ControlPlane) {
+	<td class="px-1 py-4 whitespace-nowrap text-lg font-medium text-gray-800 dark:text-neutral-200">
+		{ controlPlane.Name }
+	</td>
+	<td class="px-1 py-4 whitespace-nowrap text-lg font-medium text-gray-800 dark:text-neutral-200">
+		{ controlPlane.Status }
+	</td>
+	<td class="px-1 py-4 whitespace-nowrap text-lg font-medium text-gray-800 dark:text-neutral-200">
+		<span class="text-xs font-mono">foo.kapy.sh/join/</span><span class="font-mono text-sm">{ controlPlane.ID }</span>
+	</td>
+	<td class="px-1 py-4 whitespace-nowrap text-lg font-medium text-gray-800 dark:text-neutral-200">
+		{ controlPlane.Version }
+	</td>
+	<td class="px-1 py-4 whitespace-nowrap text-lg font-medium text-gray-800 dark:text-neutral-200">
+		@components.Dropdown(components.DropdownProps{
+			Items: []components.DropdownItem{
+				{Name: "Download kubeconfig", URL: fmt.Sprintf("/controlplanes/%s/edit", controlPlane.ID)},
+				{Name: "Delete", URL: fmt.Sprintf("/controlplanes/%s/delete", controlPlane.ID)},
+			},
+			Button: components.CleanButton(components.ButtonProps{
+				Text: "",
+				Icon: icons.Ellipsis(4),
+			}),
+		})
+	</td>
 }
 
 templ CreateControlPlaneForm() {
@@ -63,7 +117,10 @@ templ CreateControlPlaneForm() {
 			@components.GrayButton(components.ButtonProps{
 				Text: "Cancel",
 				Attrs: templ.Attributes{
-					"href": "/controlplanes",
+					"hx-get": "/controlplanes",
+					"hx-swap": "outerHTML",
+					"hx-target": "body",
+					"hx-replace-url": "true",
 				},
 				Class: "mt-10",
 			})
