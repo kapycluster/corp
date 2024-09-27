@@ -67,7 +67,7 @@ func (r *ControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		// reconcile delete here
 	}
 
-	if kcp.Status.Initalized != kcp.Status.Ready {
+	if kcp.Status.Initialized != kcp.Status.Ready {
 		l.Info("ControlPlane initialized but not ready, picking up from where we left off")
 		res, err := r.reconcileGRPCRequests(ctx, scope)
 		if err != nil {
@@ -133,7 +133,7 @@ func (r *ControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		return ctrl.Result{}, err
 	}
 
-	kcp.Status.Initalized = true
+	kcp.Status.Initialized = true
 	err = scope.UpdateStatus(ctx, &kcp)
 	if err != nil {
 		return ctrl.Result{}, fmt.Errorf("failed to update status: %w", err)
