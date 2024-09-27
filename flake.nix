@@ -17,7 +17,10 @@
 
         # Replace with pkgs.lib.fakeHash if you bump go.mod and paste the
         # resulting 'got' back here.
-        vendorHash = "sha256-zTqAqojXGrf3gAhDsFxZOKSV9WRpk64fA91LIGxsdm8=";
+        vendorHash = let
+          hashes = builtins.fromJSON (builtins.readFile ./hashes.json);
+        in hashes.go;
+
         proxyVendor = true;
         doCheck = false;
         subPackages = subPackages;
@@ -69,7 +72,11 @@
               ls -la
               cp -R ./panel/views/node_modules $out/
             '';
-            outputHash = "sha256-A9CxkAKB9ofreelWxq+EYBBNoB+UvK1xBe70sz9LR2w=";
+
+            outputHash = let
+              hashes = builtins.fromJSON (builtins.readFile ./hashes.json);
+            in hashes.node;
+
             outputHashAlgo = "sha256";
             outputHashMode = "recursive";
           };
@@ -132,9 +139,6 @@
 
       apps = forAllSystems (
         system:
-        let
-          pkgs = nixpkgsFor.${system};
-        in
         {
           panel = {
             type = "app";
