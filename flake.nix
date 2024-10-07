@@ -17,9 +17,11 @@
 
         # Replace with pkgs.lib.fakeHash if you bump go.mod and paste the
         # resulting 'got' back here.
-        vendorHash = let
-          hashes = builtins.fromJSON (builtins.readFile ./hashes.json);
-        in hashes.go;
+        vendorHash =
+          let
+            hashes = builtins.fromJSON (builtins.readFile ./hashes.json);
+          in
+          hashes.go;
 
         proxyVendor = true;
         doCheck = false;
@@ -54,9 +56,9 @@
           stdenv.mkDerivation {
             pname = "panel-node-modules";
             version = "0.0.1";
-            impureEnvVars =
-              lib.fetchers.proxyImpureEnvVars
-              ++ [ "GIT_PROXY_COMMAND" "SOCKS_SERVER" ];
+            # impureEnvVars =
+            #   lib.fetchers.proxyImpureEnvVars
+            #   ++ [ "GIT_PROXY_COMMAND" "SOCKS_SERVER" ];
             src = ./.;
             nativeBuildInputs = [ bun ];
             buildInputs = [ nodejs-slim_latest ];
@@ -64,7 +66,7 @@
             dontFixup = true;
             buildPhase = ''
               cd panel/views
-              bun install --no-progress --frozen-lockfile
+              bun i --no-progress --frozen-lockfile
               cd ../..
             '';
             installPhase = ''
@@ -73,9 +75,11 @@
               cp -R ./panel/views/node_modules $out/
             '';
 
-            outputHash = let
-              hashes = builtins.fromJSON (builtins.readFile ./hashes.json);
-            in hashes.node;
+            outputHash =
+              let
+                hashes = builtins.fromJSON (builtins.readFile ./hashes.json);
+              in
+              hashes.node;
 
             outputHashAlgo = "sha256";
             outputHashMode = "recursive";

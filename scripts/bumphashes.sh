@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Get the current directory
 DIR="$(pwd)"
@@ -27,8 +27,8 @@ if [ -n "$GO_HASH" ] || [ -n "$NODE_HASH" ]; then
   # Write the updated hashes to the file
   echo $CURRENT_HASHES > ${DIR}/hashes.json.tmp && mv ${DIR}/hashes.json.tmp ${DIR}/hashes.json
 
-  echo "Updated hashes:"
+  echo "updated hashes:"
   cat ${DIR}/hashes.json
 else
-  echo "Failed to capture both hashes."
+  echo "hashes ok"
 fi
