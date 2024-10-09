@@ -26,7 +26,7 @@ templ ControlPlanes(user goth.User, controlPlanes []*kube.ControlPlane) {
 				Title: "Dashboard",
 				Items: []NavItem{
 					{Icon: icons.Wheel(4), Name: "Control Planes", URL: "/controlplanes", Current: true},
-					{Icon: icons.Settings(4), Name: "Access Control", URL: "/access"},
+					// {Icon: icons.Settings(4), Name: "Access Control", URL: "/access"},
 					{Icon: icons.Settings(4), Name: "Settings", URL: "/settings"},
 				},
 			},
@@ -48,7 +48,9 @@ templ ControlPlanes(user goth.User, controlPlanes []*kube.ControlPlane) {
 								</thead>
 								<tbody class="divide-y divide-gray-200 dark:divide-neutral-700">
 									for _, controlPlane := range controlPlanes {
-										<tr class="hover:bg-light-0">
+										<tr
+											class="hover:bg-light-0"
+										>
 											@controlPlaneRow(controlPlane)
 										</tr>
 									}
@@ -81,10 +83,6 @@ templ controlPlaneRow(controlPlane *kube.ControlPlane) {
 				{Name: "Download kubeconfig", URL: fmt.Sprintf("/controlplanes/%s/edit", controlPlane.ID)},
 				{Name: "Delete", URL: fmt.Sprintf("/controlplanes/%s/delete", controlPlane.ID)},
 			},
-			Button: components.CleanButton(components.ButtonProps{
-				Text: "",
-				Icon: icons.Ellipsis(4),
-			}),
 		})
 	</td>
 }
@@ -104,6 +102,11 @@ templ CreateControlPlaneForm() {
 		<div class="grid grid-cols-1 grid-gap-4 pt-20">
 			@components.NamedInput("Name",
 				"Name of the control plane. Think of this as the name of your Kubernetes cluster.")
+			// @components.NamedDropdown(
+			// 	"Version",
+			// 	"Version of Kubernetes to use for the control plane.",
+			// 	[]string{"v1.30"},
+			// )
 		</div>
 		<div class="flex justify-start gap-4">
 			@components.Button(components.ButtonProps{
@@ -111,19 +114,21 @@ templ CreateControlPlaneForm() {
 				Attrs: templ.Attributes{
 					"type":    "submit",
 					"hx-post": "/controlplanes/create",
+					"hx-swap": "none",
 				},
 				Class: "mt-10",
 			})
 			@components.GrayButton(components.ButtonProps{
 				Text: "Cancel",
 				Attrs: templ.Attributes{
-					"hx-get": "/controlplanes",
-					"hx-swap": "outerHTML",
-					"hx-target": "body",
+					"hx-get":         "/controlplanes",
+					"hx-swap":        "outerHTML",
+					"hx-target":      "body",
 					"hx-replace-url": "true",
 				},
 				Class: "mt-10",
 			})
 		</div>
+		<div id="notif"></div>
 	</form>
 }

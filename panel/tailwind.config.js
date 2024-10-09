@@ -24,7 +24,11 @@ module.exports = {
           10: "#e9e9e9",
           20: "#dedede",
         },
-        red: "#db7070",
+        red: {
+          0: "#db7070",
+          10: "#c76262",
+          20: "#b35454",
+        },
         green: "#7c9f4b",
         yellow: "#d69822",
         blue: {

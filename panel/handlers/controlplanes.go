@@ -38,21 +38,22 @@ func (h Handler) HandleCreateControlPlaneForm(w http.ResponseWriter, r *http.Req
 		UserID: user.UserID,
 	}
 
+	if err := kube.ValidateControlPlane(cp); err != nil {
+		views.Error(err.Error()).Render(r.Context(), w)
+		return
+	}
+
 	h.log.Info("creating control plane!", slog.String("name", name), slog.String("namespace", namespace))
 	if err := h.kc.CreateControlPlane(r.Context(), cp); err == nil {
 		w.Header().Set("Hx-Redirect", "/controlplanes")
 		w.WriteHeader(http.StatusOK)
 	} else {
 		h.log.Error(err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
+		views.Error(err.Error()).Render(r.Context(), w)
 	}
 
 }
 
 func (h Handler) ShowCreateControlPlaneForm(w http.ResponseWriter, r *http.Request) {
-	if r.Header.Get("hx-request") != "" {
-		dashboard.CreateControlPlaneForm().Render(r.Context(), w)
-	} else {
-		http.Redirect(w, r, "/controlplanes", http.StatusSeeOther)
-	}
+	h.RenderOrRedirect(w, r, dashboard.CreateControlPlaneForm(), "/controlplanes")
 }
