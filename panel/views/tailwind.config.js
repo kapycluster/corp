@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ["./views/**/*.templ"],
+  content: ["./**/*.templ"],
   theme: {
     container: {
       padding: "2rem",
