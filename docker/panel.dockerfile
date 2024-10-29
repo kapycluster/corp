@@ -28,12 +28,13 @@ COPY ./ ./
 COPY --from=templ /app panel/views/
 
 RUN ls -la panel/views/auth
-RUN go build -o panel ./panel/cmd/main.go
+RUN mkdir out
+RUN go build -o out/panel ./panel/cmd/main.go
 
 # stage 4: final image
 FROM alpine:latest
 RUN apk --no-cache add ca-certificates
 WORKDIR /root/
-COPY --from=builder /app/panel ./
+COPY --from=builder /app/out/panel ./
 EXPOSE 8080
-CMD ["./panel"]
+ENTRYPOINT ["/root/panel"]
