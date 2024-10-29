@@ -12,14 +12,14 @@ type ButtonProps struct {
 }
 
 templ buttonTemplate(props ButtonProps, buttonClass string) {
-    <button
+	<button
 		class={ buttonClass, props.Class }
 		{ props.Attrs... }
 	>
-		{ props.Text }
 		if props.Icon != nil {
 			@props.Icon
 		}
+		{ props.Text }
 	</button>
 }
 

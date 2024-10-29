@@ -12,12 +12,19 @@ func logoutURL(provider string) string {
 	return fmt.Sprintf("auth/%s/logout", provider)
 }
 
+func userNameOrEmail(user goth.User) string {
+	if user.Name != "" {
+		return user.Name
+	}
+	return user.Email
+}
+
 templ ControlPlanes(user goth.User, controlPlanes []*kube.ControlPlane) {
 	@components.Base() {
 		@NavHeader(
 			HeaderProps{
 				Avatar: user.AvatarURL,
-				User:   user.Name,
+				User:   userNameOrEmail(user),
 				Links: []components.DropdownItem{
 					{Name: "Logout", URL: logoutURL(user.Provider)},
 				},
@@ -25,37 +32,45 @@ templ ControlPlanes(user goth.User, controlPlanes []*kube.ControlPlane) {
 			NavProps{
 				Title: "Dashboard",
 				Items: []NavItem{
-					{Icon: icons.Wheel(4), Name: "Control Planes", URL: "/controlplanes", Current: true},
+					{Icon: icons.Wheel(4), Name: "Clusters", URL: "/controlplanes", Current: true},
 					// {Icon: icons.Settings(4), Name: "Access Control", URL: "/access"},
 					{Icon: icons.Settings(4), Name: "Settings", URL: "/settings"},
 				},
 			},
 		)
-		@MainSection("Control Planes",
-			"Manage your control planes. You can access your join URLs and kubeconfigs from here.") {
+		@MainSection("Clusters",
+			"Manage your clusters. You can access your join URLs and kubeconfigs from here.") {
 			<div class="flex flex-col pt-10">
 				<div class="-m-1.5 overflow-x-auto">
 					<div class="p-1.5 min-w-full inline-block align-middle">
 						<div class="overflow-hidden">
-							<table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
-								<thead>
-									<tr>
-										<th scope="col" class="px-1 py-3 text-start text-sm font-medium text-gray-500 uppercase dark:text-neutral-500">Name</th>
-										<th scope="col" class="px-1 py-3 text-start text-sm font-medium text-gray-500 uppercase dark:text-neutral-500">Status</th>
-										<th scope="col" class="px-1 py-3 text-start text-sm font-medium text-gray-500 uppercase dark:text-neutral-500">Join URL</th>
-										<th scope="col" class="px-1 py-3 text-start text-sm font-medium text-gray-500 uppercase dark:text-neutral-500">Version</th>
-									</tr>
-								</thead>
-								<tbody class="divide-y divide-gray-200 dark:divide-neutral-700">
-									for _, controlPlane := range controlPlanes {
-										<tr
-											class="hover:bg-light-0"
-										>
-											@controlPlaneRow(controlPlane)
+							if len(controlPlanes) > 0 {
+								<table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
+									<thead>
+										<tr>
+											<th scope="col" class="px-1 py-3 text-start text-sm font-medium text-gray-500 uppercase dark:text-neutral-500">Name</th>
+											<th scope="col" class="px-1 py-3 text-start text-sm font-medium text-gray-500 uppercase dark:text-neutral-500">Status</th>
+											<th scope="col" class="px-1 py-3 text-start text-sm font-medium text-gray-500 uppercase dark:text-neutral-500">Join URL</th>
+											<th scope="col" class="px-1 py-3 text-start text-sm font-medium text-gray-500 uppercase dark:text-neutral-500">Version</th>
 										</tr>
-									}
-								</tbody>
-							</table>
+									</thead>
+									<tbody class="divide-y divide-gray-200 dark:divide-neutral-700">
+										for _, controlPlane := range controlPlanes {
+											<tr
+												class="hover:bg-light-0"
+											>
+												@controlPlaneRow(controlPlane)
+											</tr>
+										}
+									</tbody>
+								</table>
+							} else {
+								<div class="flex flex-col items-center justify-center h-96">
+									<p class="text-lg text-gray-500 dark:text-neutral-300">
+										You don't have any clusters yet. Hit the 'Create' button above to get started!
+									</p>
+								</div>
+							}
 						</div>
 					</div>
 				</div>
@@ -91,20 +106,21 @@ templ CreateControlPlaneForm() {
 	<header class="flex gap-2">
 		<div class="flex-grow">
 			<h1 class="mb-2">
-				Create a Control Plane
+				Create a Cluster
 			</h1>
 			<p class="text-gray-600 text-xl">
-				Create a new control plane to manage your Kubernetes cluster.
+				Create a new Kubernetes cluster.
+				For now, all clusters default to Kubernetes v1.30.
 			</p>
 		</div>
 	</header>
 	<form id="create-controlplane-form" onkeydown="if(event.keyCode === 13) {event.preventDefault();}">
 		<div class="grid grid-cols-1 grid-gap-4 pt-20">
 			@components.NamedInput("Name",
-				"Name of the control plane. Think of this as the name of your Kubernetes cluster.")
+				"Name of the cluster.")
 			// @components.NamedDropdown(
 			// 	"Version",
-			// 	"Version of Kubernetes to use for the control plane.",
+			// 	"Version of Kubernetes to use for the cluster.",
 			// 	[]string{"v1.30"},
 			// )
 		</div>
