@@ -10,24 +10,38 @@ import (
 
 const envPrefix = "PANEL_"
 
+type ServerConfig struct {
+	ListenHost string `koanf:"host"`
+	ListenPort int    `koanf:"port"`
+	BaseURL    string `koanf:"baseurl"`
+}
+
+type GitHubConfig struct {
+	Key    string `koanf:"key"`
+	Secret string `koanf:"secret"`
+}
+
+type GoogleConfig struct {
+	Key    string `koanf:"key"`
+	Secret string `koanf:"secret"`
+}
+
+type OAuthConfig struct {
+	GitHub GitHubConfig `koanf:"github"`
+	Google GoogleConfig `koanf:"google"`
+}
+
+type SessionConfig struct {
+	Secret   string `koanf:"secret"`
+	MaxAge   int    `koanf:"maxage"`
+	Secure   bool   `koanf:"secure"`
+	HttpOnly bool   `koanf:"httponly"`
+}
+
 type Config struct {
-	Server struct {
-		ListenHost string `koanf:"host"`
-		ListenPort int    `koanf:"port"`
-		BaseURL    string `koanf:"baseurl"`
-	} `koanf:"server"`
-	OAuth struct {
-		GitHub struct {
-			Key    string `koanf:"key"`
-			Secret string `koanf:"secret"`
-		} `koanf:"github"`
-	} `koanf:"oauth"`
-	Session struct {
-		Secret   string `koanf:"secret"`
-		MaxAge   int    `koanf:"maxage"`
-		Secure   bool   `koanf:"secure"`
-		HttpOnly bool   `koanf:"httponly"`
-	} `koanf:"session"`
+	Server  ServerConfig  `koanf:"server"`
+	OAuth   OAuthConfig   `koanf:"oauth"`
+	Session SessionConfig `koanf:"session"`
 }
 
 func NewConfig() *Config {

@@ -38,7 +38,7 @@
           if pname == "panel" then ''
             cp -R ${pkgs.panelNodeModules}/node_modules ./panel/views
             cd ./panel
-            ${pkgs.tailwindcss}/bin/tailwindcss -c ./tailwind.config.js -i ./views/input.css -o ./views/static/style.css
+            ${pkgs.tailwindcss}/bin/tailwindcss -c ./views/tailwind.config.js -i ./views/input.css -o ./views/static/style.css
             cd ..
             ${pkgs.templ}/bin/templ generate
             ls -la ./panel/views

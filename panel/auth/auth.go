@@ -9,6 +9,7 @@ import (
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/gothic"
 	"github.com/markbates/goth/providers/github"
+	"github.com/markbates/goth/providers/google"
 )
 
 const SessionName = "kapy-panel"
@@ -19,11 +20,19 @@ type Auth struct {
 func NewAuth(c *config.Config, store sessions.Store) *Auth {
 	gothic.Store = store
 
-	goth.UseProviders(github.New(
-		c.OAuth.GitHub.Key,
-		c.OAuth.GitHub.Secret,
-		buildCallbackURL("github", c),
-	))
+	goth.UseProviders(
+		github.New(
+			c.OAuth.GitHub.Key,
+			c.OAuth.GitHub.Secret,
+			buildCallbackURL("github", c),
+		),
+
+		google.New(
+			c.OAuth.Google.Key,
+			c.OAuth.Google.Secret,
+			buildCallbackURL("google", c),
+		),
+	)
 	return &Auth{}
 }
 
