@@ -8,6 +8,7 @@ on:
       - "v*"
     paths:
       - "panel/**"
+      - "docker/panel.dockerfile"
   workflow_dispatch:
 
 env:

@@ -8,6 +8,7 @@ on:
       - "v*"
     paths:
       - "kapyserver/**"
+      - "docker/kapyserver.dockerfile"
   workflow_dispatch:
 
 env:
