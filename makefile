@@ -88,6 +88,17 @@ controller-deploy: controller-gen controller-install
 controller-undeploy:
 	$(KUSTOMIZE) build $(CONTROLLER_DIR)/config/default | $(KUBECTL) delete --ignore-not-found=false -f -
 
+# Deploy panel
+.PHONY: panel-deploy
+panel-deploy:
+	@echo "deploying panel..."
+	$(KUBECTL) apply -f $(PANEL_DIR)/deploy/
+
+# Undeploy panel
+.PHONY: panel-undeploy
+panel-undeploy:
+	@echo "undeploying panel..."
+	$(KUBECTL) delete -f $(PANEL_DIR)/deploy/
 
 # Clean up binaries
 .PHONY: clean
