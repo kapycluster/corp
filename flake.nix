@@ -137,6 +137,7 @@
               air
               gcc
               nixd
+              kustomize
             ];
           };
         });

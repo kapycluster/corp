@@ -17,6 +17,8 @@ GOBUILD := $(GO) build
 
 # Kubebuilder settings
 CONTROLLER_GEN := $(CONTROLLER_GEN_BIN)
+KUSTOMIZE := kustomize
+KUBECTL := kubectl
 
 # Default target
 .PHONY: all
@@ -68,6 +70,24 @@ controller-gen: install-controller-gen
 	@echo "controller: generating k8s manifests..."
 	$(CONTROLLER_GEN) object paths="$(CONTROLLER_DIR)/..."
 	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="$(CONTROLLER_DIR)/..." output:crd:artifacts:config=$(CONTROLLER_DIR)/config/crd/bases
+
+.PHONY: controller-install
+controller-install: controller-gen
+	$(KUSTOMIZE) build $(CONTROLLER_DIR)/config/crd | $(KUBECTL) apply -f -
+
+.PHONY: controller-uninstall
+controller-uninstall: controller-gen
+	$(KUSTOMIZE) build $(CONTROLLER_DIR)/config/crd | $(KUBECTL) delete --ignore-not-found=false -f -
+
+.PHONY: controller-deploy
+controller-deploy: controller-gen controller-install
+	cd $(CONTROLLER_DIR)/config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
+	$(KUSTOMIZE) build $(CONTROLLER_DIR)/config/default | $(KUBECTL) apply -f -
+
+.PHONY: controller-undeploy
+controller-undeploy:
+	$(KUSTOMIZE) build $(CONTROLLER_DIR)/config/default | $(KUBECTL) delete --ignore-not-found=false -f -
+
 
 # Clean up binaries
 .PHONY: clean
