@@ -82,8 +82,8 @@ controller-uninstall: controller-kube-generate-all
 
 .PHONY: controller-deploy
 controller-deploy: controller-kube-generate-all controller-install
-	cd $(CONTROLLER_DIR)/config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	$(KUSTOMIZE) build $(CONTROLLER_DIR)/config/default | $(KUBECTL) apply -f -
+	$(KUSTOMIZE) build $(CONTROLLER_DIR)/config/rbac | $(KUBECTL) apply -f -
 
 .PHONY: controller-undeploy
 controller-undeploy:
