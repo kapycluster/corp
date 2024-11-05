@@ -65,28 +65,35 @@ $(CONTROLLER_GEN_BIN):
 	GOBIN=$(CURDIR)/bin $(GO) install sigs.k8s.io/controller-tools/cmd/controller-gen@latest
 
 # Generate Kubernetes manifests and types for controller
-.PHONY: controller-gen
+.PHONY: controller-kube-generate-all
 controller-gen: install-controller-gen
 	@echo "controller: generating k8s manifests..."
 	$(CONTROLLER_GEN) object paths="$(CONTROLLER_DIR)/..."
-	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="$(CONTROLLER_DIR)/..." output:crd:artifacts:config=$(CONTROLLER_DIR)/config/crd/bases
+	$(CONTROLLER_GEN) crd webhook paths="$(CONTROLLER_DIR)/..." output:crd:artifacts:config=$(CONTROLLER_DIR)/config/crd/bases
+	$(CONTROLLER_GEN) rbac:roleName=manager-role  paths="$(CONTROLLER_DIR)/..." output:rbac:artifacts:config=$(CONTROLLER_DIR)/config/rbac
 
 .PHONY: controller-install
-controller-install: controller-gen
+controller-install: controller-kube-generate-all
 	$(KUSTOMIZE) build $(CONTROLLER_DIR)/config/crd | $(KUBECTL) apply -f -
 
 .PHONY: controller-uninstall
-controller-uninstall: controller-gen
+controller-uninstall: controller-kube-generate-all
 	$(KUSTOMIZE) build $(CONTROLLER_DIR)/config/crd | $(KUBECTL) delete --ignore-not-found=false -f -
 
 .PHONY: controller-deploy
-controller-deploy: controller-gen controller-install
+controller-deploy: controller-kube-generate-all controller-install
 	cd $(CONTROLLER_DIR)/config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	$(KUSTOMIZE) build $(CONTROLLER_DIR)/config/default | $(KUBECTL) apply -f -
 
 .PHONY: controller-undeploy
 controller-undeploy:
 	$(KUSTOMIZE) build $(CONTROLLER_DIR)/config/default | $(KUBECTL) delete --ignore-not-found=false -f -
+
+# Generate Kubernetes RBAC manifests for panel
+.PHONY: panel-kube-gen-rbac
+panel-kube-gen-rbac:
+	$(CONTROLLER_GEN) rbac:roleName=panel-role paths="$(PANEL_DIR)/..." output:rbac:artifacts:config=$(PANEL_DIR)/deploy
+
 
 # Deploy panel
 .PHONY: panel-deploy
