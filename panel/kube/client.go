@@ -54,6 +54,10 @@ func NewKube() (*Kube, error) {
 	return &Kube{clientset: clientset, client: client, dynamic: dynamic}, nil
 }
 
+// +kubebuilder:rbac:groups=kapy.sh,resources=controlplanes,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=kapy.sh,resources=controlplanes/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch;create;update;patch;delete
+
 func (k *Kube) CreateControlPlane(ctx context.Context, cp ControlPlane) error {
 	kcp := cp.ToKubeObject()
 	namespaceObj := &corev1.Namespace{

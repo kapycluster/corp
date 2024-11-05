@@ -13,6 +13,7 @@ spec:
       labels:
         app: panel
     spec:
+      serviceAccountName: panel-sa
       containers:
         - name: panel
           image: ghcr.io/kapycluster/panel:master@sha256:9746a02765b9e5dbdf8f94a461b943a029423838b95d32b44d92f6f014753419
