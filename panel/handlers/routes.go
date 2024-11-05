@@ -18,7 +18,7 @@ import (
 func Setup(ctx context.Context, config *config.Config) (*chi.Mux, error) {
 	r := chi.NewRouter()
 
-	kubeClient, err := kube.NewKube()
+	kubeClient, err := kube.NewKube(config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create kube client: %w", err)
 	}

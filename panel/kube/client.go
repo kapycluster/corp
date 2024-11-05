@@ -8,6 +8,7 @@ import (
 
 	kapyv1 "github.com/kapycluster/corpy/controller/api/v1"
 	"github.com/kapycluster/corpy/log"
+	"github.com/kapycluster/corpy/panel/config"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
@@ -24,10 +25,11 @@ type Kube struct {
 	client    client.Client
 	clientset kubernetes.Interface
 	dynamic   dynamic.Interface
+	c         *config.Config
 }
 
 // NewKube creates a new Kube client
-func NewKube() (*Kube, error) {
+func NewKube(c *config.Config) (*Kube, error) {
 	if err := kapyv1.AddToScheme(scheme.Scheme); err != nil {
 		return nil, fmt.Errorf("failed to add ControlPlane to scheme: %w", err)
 	}
@@ -51,7 +53,12 @@ func NewKube() (*Kube, error) {
 		return nil, fmt.Errorf("failed to create k8s client: %w", err)
 	}
 
-	return &Kube{clientset: clientset, client: client, dynamic: dynamic}, nil
+	return &Kube{
+		clientset: clientset,
+		client:    client,
+		dynamic:   dynamic,
+		c:         c,
+	}, nil
 }
 
 // +kubebuilder:rbac:groups=kapy.sh,resources=controlplanes,verbs=get;list;watch;create;update;patch;delete
@@ -59,6 +66,7 @@ func NewKube() (*Kube, error) {
 // +kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch;create;update;patch;delete
 
 func (k *Kube) CreateControlPlane(ctx context.Context, cp ControlPlane) error {
+	var err error
 	kcp := cp.ToKubeObject()
 	namespaceObj := &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
@@ -69,11 +77,25 @@ func (k *Kube) CreateControlPlane(ctx context.Context, cp ControlPlane) error {
 	kcp.Spec.Server.Image = "ghcr.io/kapycluster/kapyserver:master"
 	kcp.Spec.Server.Persistence = "sqlite"
 
-	var err error
-
 	err = k.client.Create(ctx, namespaceObj)
 	if err != nil {
 		return fmt.Errorf("failed to create namespace: %w", err)
+	}
+
+	dockerRegistrySecret := &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "regcred",
+			Namespace: kcp.Namespace,
+		},
+		Type: corev1.SecretTypeDockerConfigJson,
+		StringData: map[string]string{
+			corev1.DockerConfigJsonKey: k.c.Server.PullToken,
+		},
+	}
+
+	err = k.client.Create(ctx, dockerRegistrySecret)
+	if err != nil {
+		return fmt.Errorf("failed to create docker registry secret: %w", err)
 	}
 
 	err = k.client.Create(ctx, kcp)
