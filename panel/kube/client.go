@@ -64,10 +64,12 @@ func NewKube(c *config.Config) (*Kube, error) {
 // +kubebuilder:rbac:groups=kapy.sh,resources=controlplanes,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=kapy.sh,resources=controlplanes/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="core",resources=secrets,verbs=get;list;watch;create;update;patch;delete
 
 func (k *Kube) CreateControlPlane(ctx context.Context, cp ControlPlane) error {
 	var err error
 	kcp := cp.ToKubeObject()
+
 	namespaceObj := &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: kcp.Namespace,
