@@ -20,6 +20,9 @@ type ServerConfig struct {
 	// PullToken is the token used to pull images from the registry.
 	// For now, this is the kapyserver image.
 	PullToken string `koanf:"pulltoken"`
+
+	// ControlPlaneBaseURL is the base URL for the control plane.
+	ControlPlaneBaseURL string `koanf:"controlplanebaseurl"`
 }
 
 type GitHubConfig struct {
@@ -54,6 +57,18 @@ type SessionConfig struct {
 	HttpOnly bool `koanf:"httponly"`
 }
 
+type CloudflareConfig struct {
+	// APIToken is the Cloudflare API token.
+	APIToken string `koanf:"apitoken"`
+	// ZoneID is the Cloudflare zone ID.
+	ZoneID string `koanf:"zoneid"`
+}
+
+type DNSConfig struct {
+	// Cloudflare contains the Cloudflare DNS configuration.
+	Cloudflare CloudflareConfig `koanf:"cloudflare"`
+}
+
 type Config struct {
 	// Server contains the server configuration.
 	Server ServerConfig `koanf:"server"`
@@ -61,6 +76,8 @@ type Config struct {
 	OAuth OAuthConfig `koanf:"oauth"`
 	// Session contains the session configuration.
 	Session SessionConfig `koanf:"session"`
+	// DNS contains the DNS configuration.
+	DNS DNSConfig `koanf:"dns"`
 }
 
 func NewConfig() *Config {
@@ -70,6 +87,7 @@ func NewConfig() *Config {
 			strings.TrimPrefix(s, envPrefix)), "_", ".", -1)
 	}), nil)
 
+	// TODO: check if values are set and fail if not
 	// Setup additional koanf providers here.
 
 	var cfg Config

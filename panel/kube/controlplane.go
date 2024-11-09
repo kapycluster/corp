@@ -15,6 +15,10 @@ const (
 	labelUserID = "controlplanes.kapy.sh/user"
 )
 
+type Network struct {
+	LoadBalancerAddress string
+}
+
 type ControlPlane struct {
 	// Name is the name of the control plane
 	Name string
@@ -30,6 +34,9 @@ type ControlPlane struct {
 
 	// Status is the status of the control plane
 	Status string
+
+	// Network is the network configuration of the control plane
+	Network Network
 }
 
 // ToKubeObject converts a ControlPlane object to a kapyv1.ControlPlane object
@@ -54,6 +61,9 @@ func (cp *ControlPlane) ToKubeObject() *kapyv1.ControlPlane {
 			Version: cp.Version,
 			Server: kapyv1.KapyServer{
 				Token: "dummy",
+			},
+			Network: kapyv1.Network{
+				LoadBalancerAddress: cp.Network.LoadBalancerAddress,
 			},
 		},
 	}

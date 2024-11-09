@@ -87,7 +87,7 @@ templ controlPlaneRow(controlPlane *kube.ControlPlane) {
 		{ controlPlane.Status }
 	</td>
 	<td class="px-1 py-4 whitespace-nowrap text-lg font-medium text-gray-800 dark:text-neutral-200">
-		<span class="text-xs font-mono">foo.kapy.sh/join/</span><span class="font-mono text-sm">{ controlPlane.ID }</span>
+		<span class="font-mono text-sm">{ controlPlane.ID }.kapy.sh</span>
 	</td>
 	<td class="px-1 py-4 whitespace-nowrap text-lg font-medium text-gray-800 dark:text-neutral-200">
 		{ controlPlane.Version }

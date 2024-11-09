@@ -1,11 +1,13 @@
 package handlers
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
 
 	"github.com/google/uuid"
 
+	"github.com/kapycluster/corpy/panel/dns"
 	"github.com/kapycluster/corpy/panel/kube"
 	"github.com/kapycluster/corpy/panel/views"
 	"github.com/kapycluster/corpy/panel/views/dashboard"
@@ -36,9 +38,26 @@ func (h Handler) HandleCreateControlPlaneForm(w http.ResponseWriter, r *http.Req
 		Name:   name,
 		ID:     namespace,
 		UserID: user.UserID,
+		Network: kube.Network{
+			LoadBalancerAddress: h.controlPlaneAddress(namespace),
+		},
 	}
 
 	if err := kube.ValidateControlPlane(cp); err != nil {
+		views.Error(err.Error()).Render(r.Context(), w)
+		return
+	}
+
+	h.log.Info("creating dns record", "record", h.controlPlaneAddress(namespace))
+	if err := h.dns.CreateDNSRecord(r.Context(), dns.Record{
+		Name: h.controlPlaneAddress(namespace),
+		Type: "A",
+		// TODO: this *has* to be parameterized
+		Content: "65.109.40.187",
+		TTL:     300,
+		Proxied: false,
+	}); err != nil {
+		h.log.Error(err.Error())
 		views.Error(err.Error()).Render(r.Context(), w)
 		return
 	}
@@ -56,4 +75,8 @@ func (h Handler) HandleCreateControlPlaneForm(w http.ResponseWriter, r *http.Req
 
 func (h Handler) ShowCreateControlPlaneForm(w http.ResponseWriter, r *http.Request) {
 	h.RenderOrRedirect(w, r, dashboard.CreateControlPlaneForm(), "/controlplanes")
+}
+
+func (h Handler) controlPlaneAddress(ns string) string {
+	return fmt.Sprintf("%s.%s", ns, h.c.Server.ControlPlaneBaseURL)
 }

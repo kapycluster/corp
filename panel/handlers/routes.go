@@ -9,6 +9,7 @@ import (
 	"github.com/kapycluster/corpy/log"
 	"github.com/kapycluster/corpy/panel/auth"
 	"github.com/kapycluster/corpy/panel/config"
+	"github.com/kapycluster/corpy/panel/dns"
 	"github.com/kapycluster/corpy/panel/handlers/middleware"
 	"github.com/kapycluster/corpy/panel/kube"
 	"github.com/kapycluster/corpy/panel/store"
@@ -38,12 +39,18 @@ func Setup(ctx context.Context, config *config.Config) (*chi.Mux, error) {
 		return nil, fmt.Errorf("failed to create db store: %w", err)
 	}
 
+	cloudflare, err := dns.NewCloudflare(config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create cloudflare client: %w", err)
+	}
+
 	handler := Handler{
 		kc:   kubeClient,
 		db:   dbStore,
 		log:  log.FromContext(ctx),
 		c:    config,
 		auth: auth,
+		dns:  cloudflare,
 	}
 
 	// Show* functions render templ templates.

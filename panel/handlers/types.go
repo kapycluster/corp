@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 
+	"github.com/kapycluster/corpy/panel/dns"
 	"github.com/kapycluster/corpy/panel/kube"
 	"github.com/kapycluster/corpy/panel/model"
 )
@@ -18,4 +19,9 @@ type KubeClient interface {
 
 type DBStore interface {
 	CreateControlPlane(ctx context.Context, cp *model.ControlPlane) error
+}
+
+type DNSClient interface {
+	CreateDNSRecord(ctx context.Context, record dns.Record) error
+	DeleteDNSRecord(ctx context.Context, recordID string) error
 }

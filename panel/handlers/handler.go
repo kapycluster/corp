@@ -16,6 +16,7 @@ type Handler struct {
 	log  *slog.Logger
 	c    *config.Config
 	auth *auth.Auth
+	dns  DNSClient
 }
 
 func (h Handler) MustGetUser(w http.ResponseWriter, r *http.Request) goth.User {
