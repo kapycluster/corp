@@ -166,7 +166,7 @@ func (r *ControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 func (r *ControlPlaneReconciler) reconcileGRPCRequests(ctx context.Context, scope *scope.ControlPlaneScope) (ctrl.Result, error) {
 	l := log.FromContext(ctx)
 	l.Info("asking kapyserver for kubeconfig")
-	kapyclient, err := kapyclient.NewKapyClient("127.0.0.1:54545")
+	kapyclient, err := kapyclient.NewKapyClient(scope.ServiceAddress())
 	if err != nil {
 		l.Info("failed to connect to kapyserver, requeing...", "error", err.Error())
 		return ctrl.Result{RequeueAfter: time.Second * 5}, nil

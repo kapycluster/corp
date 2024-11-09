@@ -31,6 +31,14 @@ func (k *ControlPlaneScope) Namespace() string {
 	return k.kc.Namespace
 }
 
+func (k *ControlPlaneScope) ServiceName() string {
+	return fmt.Sprintf("%s.%s", k.kc.Name, k.kc.Namespace)
+}
+
+func (k *ControlPlaneScope) ServiceAddress() string {
+	return fmt.Sprintf("%s.%s:54545", k.kc.Name, k.kc.Namespace)
+}
+
 func (k *ControlPlaneScope) ServerImage() string {
 	return k.kc.Spec.Server.Image
 }
