@@ -49,7 +49,7 @@ func NewServerConfig() (*ServerConfig, error) {
 	config.ControlConfig.BindAddress = config.ControlConfig.AdvertiseIP
 	config.ControlConfig.FlannelBackend = "wireguard-native"
 
-	config.ControlConfig.HTTPSPort = 6443
+	config.ControlConfig.HTTPSPort = 443
 	config.ControlConfig.SupervisorPort = config.ControlConfig.HTTPSPort
 	config.SupervisorPort = config.ControlConfig.HTTPSPort
 
