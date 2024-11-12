@@ -15,7 +15,7 @@ type NavProps struct {
 }
 
 const navClass = "navigation flex items-center overflow-auto px-5 left-5 relative md:container md:mx-auto md:px-0 right-1"
-const aClass = "py-4 px-1 inline-flex items-center gap-2 border-b-2 text-lg whitespace-nowrap hover:text-blue-20 focus:outline-none focus:text-blue-20"
+const aClass = "py-4 px-1 inline-flex items-center gap-2 border-b-2 text-lg whitespace-nowrap hover:text-indigo-400 focus:outline-none focus:text-indigo-400"
 
 templ Nav(props NavProps) {
 	<div class="border-b mt-4 mb-6">
@@ -26,7 +26,7 @@ templ Nav(props NavProps) {
 						for _, item := range props.Items {
 							<a
 								class={ aClass,
-                                templ.KV("text-blue-20 border-blue-20 font-medium", item.Current),
+                                templ.KV("text-indigo-400 border-indigo-400 font-medium", item.Current),
                                 templ.KV("text-gray-500 border-transparent", !item.Current) }
 								href={ templ.URL(item.URL) }
 							>
@@ -68,8 +68,9 @@ templ Header(props HeaderProps) {
 	<div class="container mx-auto pt-4 mb-02 md:mb-4">
 		<header class="flex justify-between items-center md:px-0">
 			<div class="flex items-center" style="max-width: 100%;">
+				<img src="https://kapycluster.com/logo-icon.svg" alt="Logo" class="h-8 w-8 mr-2"/>
 				<a href="/controlplanes" class="flex items-center">
-					<div role="banner" class="text-lg text-gray-900 font-semibold truncate">{ props.User }</div>
+					<div role="banner" class="text-lg px-5 text-gray-900 font-semibold truncate">{ props.User }</div>
 				</a>
 			</div>
 			<nav class="flex items-center">
