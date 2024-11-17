@@ -7,10 +7,10 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/kapycluster/corpy/panel/dns"
-	"github.com/kapycluster/corpy/panel/kube"
-	"github.com/kapycluster/corpy/panel/views"
-	"github.com/kapycluster/corpy/panel/views/dashboard"
+	"kapycluster.com/corp/panel/dns"
+	"kapycluster.com/corp/panel/kube"
+	"kapycluster.com/corp/panel/views"
+	"kapycluster.com/corp/panel/views/dashboard"
 )
 
 func (h Handler) ShowDashboard(w http.ResponseWriter, r *http.Request) {

@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/kapycluster/corpy/types/proto"
 	"google.golang.org/grpc"
+	"kapycluster.com/corp/types/proto"
 )
 
 func (k *KapyClient) GenerateToken(ctx context.Context) (string, error) {

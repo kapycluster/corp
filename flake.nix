@@ -122,7 +122,8 @@
         {
           default = pkgs.mkShell {
             nativeBuildInputs = with pkgs; [
-              go
+              k3d
+              go_1_23
               kubectl
               kubectx
               protobuf

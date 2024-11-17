@@ -29,12 +29,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	kapyv1 "github.com/kapycluster/corpy/controller/api/v1"
-	"github.com/kapycluster/corpy/controller/internal/controlplane"
-	"github.com/kapycluster/corpy/controller/internal/scope"
-	"github.com/kapycluster/corpy/kapyclient"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	kapyv1 "kapycluster.com/corp/controller/api/v1"
+	"kapycluster.com/corp/controller/internal/controlplane"
+	"kapycluster.com/corp/controller/internal/scope"
+	"kapycluster.com/corp/kapyclient"
 )
 
 // ControlPlaneReconciler reconciles a ControlPlane object

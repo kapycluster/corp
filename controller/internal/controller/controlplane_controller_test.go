@@ -27,7 +27,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	kapyv1 "github.com/kapycluster/corpy/controller/api/v1"
+	kapyv1 "kapycluster.com/corp/controller/api/v1"
 )
 
 var _ = Describe("ControlPlane Controller", func() {

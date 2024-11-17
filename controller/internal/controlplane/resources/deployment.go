@@ -3,12 +3,12 @@ package resources
 import (
 	"context"
 
-	"github.com/kapycluster/corpy/controller/internal/scope"
-	"github.com/kapycluster/corpy/types"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8stypes "k8s.io/apimachinery/pkg/types"
+	"kapycluster.com/corp/controller/internal/scope"
+	"kapycluster.com/corp/types"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )

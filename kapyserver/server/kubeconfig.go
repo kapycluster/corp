@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/kapycluster/corpy/kapyserver/config"
-	"github.com/kapycluster/corpy/types/proto"
+	"kapycluster.com/corp/kapyserver/config"
+	"kapycluster.com/corp/types/proto"
 )
 
 type kubeConfigServer struct {

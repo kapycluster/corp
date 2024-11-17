@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/kapycluster/corpy/kapyserver/server"
+	"kapycluster.com/corp/kapyserver/server"
 )
 
 func main() {

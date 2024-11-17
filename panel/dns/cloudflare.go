@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/cloudflare/cloudflare-go"
-	"github.com/kapycluster/corpy/panel/config"
+	"kapycluster.com/corp/panel/config"
 )
 
 type Record struct {

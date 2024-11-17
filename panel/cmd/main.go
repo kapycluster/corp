@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/kapycluster/corpy/log"
-	"github.com/kapycluster/corpy/panel/config"
-	"github.com/kapycluster/corpy/panel/handlers"
+	"kapycluster.com/corp/log"
+	"kapycluster.com/corp/panel/config"
+	"kapycluster.com/corp/panel/handlers"
 )
 
 func main() {

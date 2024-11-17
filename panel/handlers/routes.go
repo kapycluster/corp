@@ -6,14 +6,14 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/kapycluster/corpy/log"
-	"github.com/kapycluster/corpy/panel/auth"
-	"github.com/kapycluster/corpy/panel/config"
-	"github.com/kapycluster/corpy/panel/dns"
-	"github.com/kapycluster/corpy/panel/handlers/middleware"
-	"github.com/kapycluster/corpy/panel/kube"
-	"github.com/kapycluster/corpy/panel/store"
-	"github.com/kapycluster/corpy/panel/views"
+	"kapycluster.com/corp/log"
+	"kapycluster.com/corp/panel/auth"
+	"kapycluster.com/corp/panel/config"
+	"kapycluster.com/corp/panel/dns"
+	"kapycluster.com/corp/panel/handlers/middleware"
+	"kapycluster.com/corp/panel/kube"
+	"kapycluster.com/corp/panel/store"
+	"kapycluster.com/corp/panel/views"
 )
 
 func Setup(ctx context.Context, config *config.Config) (*chi.Mux, error) {

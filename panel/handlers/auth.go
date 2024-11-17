@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/kapycluster/corpy/panel/views"
-	authview "github.com/kapycluster/corpy/panel/views/auth"
+	"kapycluster.com/corp/panel/views"
+	authview "kapycluster.com/corp/panel/views/auth"
 )
 
 func (h Handler) ShowLogin(w http.ResponseWriter, r *http.Request) {

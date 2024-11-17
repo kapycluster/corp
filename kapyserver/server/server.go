@@ -13,12 +13,12 @@ import (
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	"github.com/k3s-io/k3s/pkg/clientaccess"
 	"github.com/k3s-io/k3s/pkg/server"
-	"github.com/kapycluster/corpy/kapyserver/config"
-	"github.com/kapycluster/corpy/kapyserver/util"
-	"github.com/kapycluster/corpy/log"
-	"github.com/kapycluster/corpy/types"
-	"github.com/kapycluster/corpy/types/proto"
 	"google.golang.org/grpc"
+	"kapycluster.com/corp/kapyserver/config"
+	"kapycluster.com/corp/kapyserver/util"
+	"kapycluster.com/corp/log"
+	"kapycluster.com/corp/types"
+	"kapycluster.com/corp/types/proto"
 )
 
 func Start() error {

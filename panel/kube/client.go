@@ -6,9 +6,6 @@ import (
 	"os"
 	"time"
 
-	kapyv1 "github.com/kapycluster/corpy/controller/api/v1"
-	"github.com/kapycluster/corpy/log"
-	"github.com/kapycluster/corpy/panel/config"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
@@ -18,6 +15,9 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
+	kapyv1 "kapycluster.com/corp/controller/api/v1"
+	"kapycluster.com/corp/log"
+	"kapycluster.com/corp/panel/config"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 

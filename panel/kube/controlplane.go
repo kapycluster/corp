@@ -1,8 +1,8 @@
 package kube
 
 import (
-	kapyv1 "github.com/kapycluster/corpy/controller/api/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	kapyv1 "kapycluster.com/corp/controller/api/v1"
 )
 
 type ControlPlaneStatus string

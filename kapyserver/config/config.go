@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/k3s-io/k3s/pkg/server"
-	"github.com/kapycluster/corpy/kapyserver/util"
-	"github.com/kapycluster/corpy/types"
+	"kapycluster.com/corp/kapyserver/util"
+	"kapycluster.com/corp/types"
 
 	daemonsconfig "github.com/k3s-io/k3s/pkg/daemons/config"
 	apinet "k8s.io/apimachinery/pkg/util/net"

@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/k3s-io/k3s/pkg/clientaccess"
-	"github.com/kapycluster/corpy/kapyserver/config"
-	"github.com/kapycluster/corpy/types/proto"
+	"kapycluster.com/corp/kapyserver/config"
+	"kapycluster.com/corp/types/proto"
 )
 
 type tokenServer struct {

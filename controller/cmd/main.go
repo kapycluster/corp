@@ -34,9 +34,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	"github.com/go-logr/logr"
-	kapyv1 "github.com/kapycluster/corpy/controller/api/v1"
-	"github.com/kapycluster/corpy/controller/internal/controller"
-	"github.com/kapycluster/corpy/log"
+	kapyv1 "kapycluster.com/corp/controller/api/v1"
+	"kapycluster.com/corp/controller/internal/controller"
+	"kapycluster.com/corp/log"
 	// +kubebuilder:scaffold:imports
 )
 

@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/httplog/v2"
-	"github.com/kapycluster/corpy/log"
+	"kapycluster.com/corp/log"
 )
 
 func RequestLogger(ctx context.Context) func(next http.Handler) http.Handler {

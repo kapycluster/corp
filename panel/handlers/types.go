@@ -3,9 +3,9 @@ package handlers
 import (
 	"context"
 
-	"github.com/kapycluster/corpy/panel/dns"
-	"github.com/kapycluster/corpy/panel/kube"
-	"github.com/kapycluster/corpy/panel/model"
+	"kapycluster.com/corp/panel/dns"
+	"kapycluster.com/corp/panel/kube"
+	"kapycluster.com/corp/panel/model"
 )
 
 type KubeClient interface {

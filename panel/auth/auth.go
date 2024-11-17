@@ -5,11 +5,11 @@ import (
 	"net/http"
 
 	"github.com/gorilla/sessions"
-	"github.com/kapycluster/corpy/panel/config"
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/gothic"
 	"github.com/markbates/goth/providers/github"
 	"github.com/markbates/goth/providers/google"
+	"kapycluster.com/corp/panel/config"
 )
 
 const SessionName = "kapy-panel"

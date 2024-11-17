@@ -6,7 +6,7 @@ domain: kapy.sh
 layout:
 - go.kubebuilder.io/v4
 projectName: controller
-repo: github.com/kapycluster/corpy/controller
+repo: kapycluster.com/corp/controller
 resources:
 - api:
     crdVersion: v1
@@ -15,6 +15,6 @@ resources:
   domain: kapy.sh
   group: kapy.sh
   kind: ControlPlane
-  path: github.com/kapycluster/corpy/controller/api/v1
+  path: kapycluster.com/corp/controller/api/v1
   version: v1
 version: "3"

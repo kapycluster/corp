@@ -3,7 +3,7 @@ package store
 import (
 	"context"
 
-	"github.com/kapycluster/corpy/panel/model"
+	"kapycluster.com/corp/panel/model"
 )
 
 type DB struct {

@@ -5,9 +5,9 @@ import (
 	"net/http"
 
 	"github.com/a-h/templ"
-	"github.com/kapycluster/corpy/panel/auth"
-	"github.com/kapycluster/corpy/panel/config"
 	"github.com/markbates/goth"
+	"kapycluster.com/corp/panel/auth"
+	"kapycluster.com/corp/panel/config"
 )
 
 type Handler struct {
