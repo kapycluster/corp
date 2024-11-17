@@ -1,6 +1,10 @@
 name: build and push (controller)
 
 on:
+  pull_request:
+    paths:
+      - "controller/**"
+      - "docker/controller.dockerfile"
   push:
     branches:
       - "master"

@@ -35,7 +35,7 @@ import (
 
 	"github.com/go-logr/logr"
 	kapyv1 "kapycluster.com/corp/controller/api/v1"
-	"kapycluster.com/corp/controller/internal/controller"
+	"kapycluster.com/corp/controller/controller"
 	"kapycluster.com/corp/log"
 	// +kubebuilder:scaffold:imports
 )

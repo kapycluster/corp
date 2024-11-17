@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"kapycluster.com/corp/controller/internal/controlplane/resources"
-	"kapycluster.com/corp/controller/internal/scope"
+	"kapycluster.com/corp/controller/controlplane/resources"
+	"kapycluster.com/corp/controller/scope"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
