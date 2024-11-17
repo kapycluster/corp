@@ -1,6 +1,10 @@
 name: build and push (kapyserver)
 
 on:
+  pull_request:
+    paths:
+      - "kapyserver/**"
+      - "docker/kapyserver.dockerfile"
   push:
     branches:
       - "master"
@@ -48,7 +52,7 @@ jobs:
             -gcflags "all=" \
             -ldflags "-w -s -extldflags '-static -lm -ldl -lz -lpthread'" \
             -o ./tmpbin/kapyserver \
-            ./kapyserver/cmd/main.go
+            ./cmd/kapyserver/main.go
 
       - name: Docker meta
         id: meta

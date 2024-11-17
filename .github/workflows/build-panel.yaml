@@ -1,6 +1,10 @@
 name: build and push (panel)
 
 on:
+  pull_request:
+    paths:
+      - "panel/**"
+      - "docker/panel.dockerfile"
   push:
     branches:
       - "master"

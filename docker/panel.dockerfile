@@ -19,6 +19,7 @@ RUN apk add --no-cache git
 WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
+COPY ./cmd/ ./cmd/
 COPY ./types/ ./types/
 COPY ./panel/ ./panel/
 COPY ./kapyclient/ ./kapyclient/
@@ -29,7 +30,7 @@ COPY --from=templ /app panel/views/
 
 RUN ls -la panel/views/auth
 RUN mkdir out
-RUN go build -o out/panel ./panel/cmd/main.go
+RUN go build -o out/panel ./cmd/panel/main.go
 
 # stage 4: final image
 FROM alpine:latest
