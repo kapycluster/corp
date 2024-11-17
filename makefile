@@ -5,6 +5,11 @@ KAPYSERVER_DIR := ./kapyserver
 PANEL_DIR := ./panel
 CONTROLLER_DIR := ./controller
 
+# Commands
+KAPYSERVER_CMD := ./cmd/kapyserver
+PANEL_CMD := ./cmd/panel
+CONTROLLER_CMD := ./cmd/controller
+
 # Binaries
 KAPYSERVER_BIN := bin/kapyserver
 PANEL_BIN := bin/panel
@@ -35,7 +40,7 @@ kapyserver: $(KAPYSERVER_BIN)
 $(KAPYSERVER_BIN):
 	@echo "building kapyserver..."
 	@mkdir -p bin
-	$(GOBUILD) -o $@ $(KAPYSERVER_DIR)/cmd/main.go
+	$(GOBUILD) -o $@ $(KAPYSERVER_CMD)/main.go
 
 # Build panel binary
 .PHONY: panel
@@ -44,7 +49,7 @@ panel: $(PANEL_BIN)
 $(PANEL_BIN):
 	@echo "building panel..."
 	@mkdir -p bin
-	$(GOBUILD) -o $@ $(PANEL_DIR)/cmd/main.go
+	$(GOBUILD) -o $@ $(PANEL_CMD)/main.go
 
 # Build controller binary
 .PHONY: controller
@@ -53,7 +58,7 @@ controller: $(CONTROLLER_BIN)
 $(CONTROLLER_BIN):
 	@echo "building controller..."
 	@mkdir -p bin
-	$(GOBUILD) -o $@ $(CONTROLLER_DIR)/cmd/main.go
+	$(GOBUILD) -o $@ $(CONTROLLER_CMD)/main.go
 
 # Install controller-gen binary
 .PHONY: install-controller-gen
