@@ -85,7 +85,6 @@ func (r *ControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		return ctrl.Result{}, err
 	}
 
-	// TODO: make this entire for loop a non-blocking op
 	if kapyDeploy.Status.Conditions == nil {
 		l.Info("kapyserver deployment conditions are not available yet...")
 		return ctrl.Result{RequeueAfter: 5 * time.Second}, nil
