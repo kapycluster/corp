@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"kapycluster.com/corp/panel/views"
 	authview "kapycluster.com/corp/panel/views/auth"
 )
 
@@ -31,7 +30,7 @@ func (h Handler) HandleProviderLogin(w http.ResponseWriter, r *http.Request) {
 func (h Handler) HandleLogout(w http.ResponseWriter, r *http.Request) {
 	err := h.auth.ClearUserSession(w, r)
 	if err != nil {
-		views.Error("failed to clear user session").Render(r.Context(), w)
+		h.Error(r.Context(), w, "failed to clear user session", err)
 		return
 	}
 	http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
@@ -43,12 +42,12 @@ func (h Handler) HandleProviderCallback(w http.ResponseWriter, r *http.Request) 
 
 	u, err := h.auth.CompleteUserAuth(w, r)
 	if err != nil {
-		views.Error(err.Error()).Render(r.Context(), w)
+		h.Error(r.Context(), w, "failed to complete user auth", err)
 		return
 	}
 
 	if err := h.auth.StoreUserSession(w, r, u); err != nil {
-		views.Error("failed to store user session").Render(r.Context(), w)
+		h.Error(r.Context(), w, "failed to store user session", err)
 		return
 	}
 

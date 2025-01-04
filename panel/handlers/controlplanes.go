@@ -9,7 +9,6 @@ import (
 
 	"kapycluster.com/corp/panel/dns"
 	"kapycluster.com/corp/panel/kube"
-	"kapycluster.com/corp/panel/views"
 	"kapycluster.com/corp/panel/views/dashboard"
 )
 
@@ -17,8 +16,7 @@ func (h Handler) ShowDashboard(w http.ResponseWriter, r *http.Request) {
 	u := h.MustGetUser(w, r)
 	list, err := h.kc.ListControlPlanes(r.Context(), u.UserID)
 	if err != nil {
-		h.log.Error(err.Error())
-		views.Error("failed to get control plane list").Render(r.Context(), w)
+		h.Error(r.Context(), w, "failed to get control plane list", err)
 		return
 	}
 
@@ -44,7 +42,7 @@ func (h Handler) HandleCreateControlPlaneForm(w http.ResponseWriter, r *http.Req
 	}
 
 	if err := kube.ValidateControlPlane(cp); err != nil {
-		views.Error(err.Error()).Render(r.Context(), w)
+		h.Error(r.Context(), w, "failed to validate control plane", err)
 		return
 	}
 
@@ -57,8 +55,7 @@ func (h Handler) HandleCreateControlPlaneForm(w http.ResponseWriter, r *http.Req
 		TTL:     300,
 		Proxied: false,
 	}); err != nil {
-		h.log.Error(err.Error())
-		views.Error(err.Error()).Render(r.Context(), w)
+		h.Error(r.Context(), w, "failed to create dns record", err)
 		return
 	}
 
@@ -68,7 +65,7 @@ func (h Handler) HandleCreateControlPlaneForm(w http.ResponseWriter, r *http.Req
 		w.WriteHeader(http.StatusOK)
 	} else {
 		h.log.Error(err.Error())
-		views.Error(err.Error()).Render(r.Context(), w)
+		h.Error(r.Context(), w, "failed to create control plane", err)
 	}
 
 }

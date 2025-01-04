@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"log/slog"
 	"net/http"
 
@@ -8,6 +9,7 @@ import (
 	"github.com/markbates/goth"
 	"kapycluster.com/corp/panel/auth"
 	"kapycluster.com/corp/panel/config"
+	"kapycluster.com/corp/panel/views"
 )
 
 type Handler struct {
@@ -34,4 +36,9 @@ func (h Handler) RenderOrRedirect(w http.ResponseWriter, r *http.Request, c temp
 	} else {
 		http.Redirect(w, r, path, http.StatusSeeOther)
 	}
+}
+
+func (h Handler) Error(ctx context.Context, w http.ResponseWriter, msg string, err error) {
+	h.log.Error(msg, "error", err)
+	views.Error(msg).Render(ctx, w)
 }

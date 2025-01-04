@@ -3,7 +3,7 @@ pre_cmd = [
     "cd views && npx tailwindcss -i ./input.css -o ./static/style.css",
     "templ generate",
 ]
-cmd = "go build -o panel ./cmd/main.go"
+cmd = "go build -o panel ../cmd/panel/main.go"
 bin = "panel"
 root = "."
 
