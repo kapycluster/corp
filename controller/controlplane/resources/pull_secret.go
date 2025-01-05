@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-	"os"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -28,7 +27,7 @@ func NewPullSecret(client client.Client, scope *scope.ControlPlaneScope) *PullSe
 // Create copies the regcred secret from the current namespace into the control plane namespace
 func (s *PullSecret) Create(ctx context.Context) error {
 	sourceSecret := &corev1.Secret{}
-	if err := s.Client.Get(ctx, types.NamespacedName{Name: "regcred", Namespace: os.Getenv("POD_NAMESPACE")}, sourceSecret); err != nil {
+	if err := s.Client.Get(ctx, types.NamespacedName{Name: "regcred", Namespace: "controller-system"}, sourceSecret); err != nil {
 		return err
 	}
 
