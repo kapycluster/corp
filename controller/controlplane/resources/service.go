@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"fmt"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -54,7 +55,7 @@ func (s *Service) Create(ctx context.Context) error {
 	}
 
 	if err := s.scope.SetControllerReference(ctx, &svc); err != nil {
-		return err
+		return fmt.Errorf("failed setting controller ref: %w", err)
 	}
 
 	return nil

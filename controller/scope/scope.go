@@ -75,6 +75,6 @@ func (k *ControlPlaneScope) UpdateStatus(ctx context.Context, kc *kapyv1.Control
 func (k *ControlPlaneScope) ServerCommonLabels() map[string]string {
 	return map[string]string{
 		"controlplane.kapy.sh/name":      k.Name(),
-		"controlplane.kapy.sh/component": "kapy-server",
+		"controlplane.kapy.sh/component": "kapyserver",
 	}
 }
