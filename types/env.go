@@ -10,4 +10,5 @@ const (
 	KapyServerDatastore           = "KAPYSERVER_DATASTORE"
 	KapyServerAdvertiseIP         = "KAPYSERVER_ADVERTISE_IP"
 	KapyServerGRPCAddress         = "KAPYSERVER_GRPC_ADDRESS"
+	KapyServerDebug               = "KAPYSERVER_DEBUG"
 )

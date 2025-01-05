@@ -118,9 +118,13 @@ func run(ctx context.Context, serverConfig *config.ServerConfig, wg *sync.WaitGr
 		return fmt.Errorf("generating token: %w", err)
 	}
 
+	var dbgEnv string
+	dbgEnv = os.Getenv(types.KapyServerDebug)
+	debug := dbgEnv == "true"
+
 	agentConfig := cmds.Agent{
 		DataDir:                  serverConfig.ControlConfig.DataDir,
-		Debug:                    true,
+		Debug:                    debug,
 		ServerURL:                fmt.Sprintf("https://%s:%d", serverConfig.LBAddress, serverConfig.SupervisorPort),
 		Token:                    token,
 		ContainerRuntimeReady:    config.ContainerRuntimeReady,
