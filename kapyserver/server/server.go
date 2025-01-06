@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"runtime/debug"
 	"sync"
 	"syscall"
 
@@ -36,6 +37,7 @@ func Start() error {
 	wg := sync.WaitGroup{}
 	errCh := make(chan error, 2)
 
+	// Setup gRPC server
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
 
@@ -46,20 +48,25 @@ func Start() error {
 		config: serverConfig,
 	})
 
-	runWg := &sync.WaitGroup{}
+	// Start k3s first
+	k3sReady := &sync.WaitGroup{}
+	k3sReady.Add(1)
 
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		err := run(ctx, serverConfig, runWg)
+		err := run(ctx, serverConfig, k3sReady)
 		if err != nil {
 			l.Error("k3s error", "error", err)
 			errCh <- err
 		}
 	}()
 
-	l.Info("waiting for k3s to come up...")
-	runWg.Wait()
+	// Wait for k3s to be ready before starting gRPC server
+	l.Info("waiting for k3s to come up...", "stack", string(debug.Stack()))
+	k3sReady.Wait()
+
+	// Now start gRPC server
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -67,6 +74,7 @@ func Start() error {
 		if err != nil {
 			l.Error("failed to listen", "error", err)
 			errCh <- err
+			return
 		}
 		defer lis.Close()
 		l.Info("starting gRPC server", "address", util.GetEnv(types.KapyServerGRPCAddress))
@@ -84,6 +92,7 @@ func Start() error {
 	// Wait for an error, signal, or context cancellation
 	select {
 	case err := <-errCh:
+		cancel()
 		return err
 	case <-sigChan:
 		fmt.Println("recieved signal, shutting down...")
