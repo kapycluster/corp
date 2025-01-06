@@ -14,11 +14,11 @@ import (
 func Create(ctx context.Context, client client.Client, scope *scope.ControlPlaneScope) error {
 	l := log.FromContext(ctx, "control plane", scope.Name())
 
-	l.Info("creating pull secret")
-	secret := resources.NewPullSecret(client, scope)
-	if err := secret.Create(ctx); err != nil {
-		return fmt.Errorf("control plane: failed to create pull secret for %s: %w", scope.Name(), err)
-	}
+	// l.Info("creating pull secret")
+	// secret := resources.NewPullSecret(client, scope)
+	// if err := secret.Create(ctx); err != nil {
+	// 	return fmt.Errorf("control plane: failed to create pull secret for %s: %w", scope.Name(), err)
+	// }
 
 	l.Info("creating service for control plane")
 	svc := resources.NewService(client, scope)
