@@ -2,7 +2,7 @@ package kube
 
 import "fmt"
 
-func ValidateControlPlane(cp ControlPlane) error {
+func (k *Kube) ValidateControlPlane(cp ControlPlane) error {
 	if cp.Name == "" {
 		return fmt.Errorf("Name can't be empty")
 	}
@@ -18,6 +18,10 @@ func ValidateControlPlane(cp ControlPlane) error {
 
 	if cp.UserID == "" {
 		return fmt.Errorf("User ID is required")
+	}
+
+	if !k.kc.ValidateRegion(cp.Region) {
+		return fmt.Errorf("Invalid region %s", cp.Region)
 	}
 
 	return nil

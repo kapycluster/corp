@@ -19,7 +19,7 @@ import (
 func Setup(ctx context.Context, config *config.Config) (*chi.Mux, error) {
 	r := chi.NewRouter()
 
-	kubeClient, err := kube.NewKube(config)
+	kubeClient, err := kube.NewKube(ctx, config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create kube client: %w", err)
 	}
@@ -34,9 +34,14 @@ func Setup(ctx context.Context, config *config.Config) (*chi.Mux, error) {
 	)
 	auth := auth.NewAuth(config, sessionStore)
 
-	dbStore, err := store.NewDB()
+	dbStore, err := store.New(config.Database.URL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create db store: %w", err)
+	}
+
+	err = dbStore.Setup(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to setup db store: %w", err)
 	}
 
 	cloudflare, err := dns.NewCloudflare(config)

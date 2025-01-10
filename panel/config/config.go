@@ -69,6 +69,14 @@ type DNSConfig struct {
 	Cloudflare CloudflareConfig `koanf:"cloudflare"`
 }
 
+type DatabaseConfig struct {
+	URL string `koanf:"url"`
+}
+
+type KubernetesConfig struct {
+	KubeconfigsDir string `koanf:"kubeconfigs"`
+}
+
 type Config struct {
 	// Server contains the server configuration.
 	Server ServerConfig `koanf:"server"`
@@ -78,6 +86,10 @@ type Config struct {
 	Session SessionConfig `koanf:"session"`
 	// DNS contains the DNS configuration.
 	DNS DNSConfig `koanf:"dns"`
+	// Database contains the database configuration.
+	Database DatabaseConfig `koanf:"database"`
+	// Kubernetes contains Kubernetes-specific configuration.
+	Kubernetes KubernetesConfig `koanf:"kubernetes"`
 }
 
 func NewConfig() *Config {
@@ -96,4 +108,8 @@ func NewConfig() *Config {
 	}
 
 	return &cfg
+}
+
+func AsEnv(key string) string {
+	return envPrefix + strings.ToUpper(strings.Replace(key, ".", "_", -1))
 }

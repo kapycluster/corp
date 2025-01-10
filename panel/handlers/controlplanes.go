@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 
 	"kapycluster.com/corp/panel/dns"
@@ -14,7 +15,12 @@ import (
 
 func (h Handler) ShowDashboard(w http.ResponseWriter, r *http.Request) {
 	u := h.MustGetUser(w, r)
-	list, err := h.kc.ListControlPlanes(r.Context(), u.UserID)
+	regions, err := h.db.GetUserRegions(r.Context(), u.UserID)
+	if err != nil {
+		h.Error(r.Context(), w, "failed to fetch regions", err)
+		return
+	}
+	list, err := h.kc.ListControlPlanes(r.Context(), u.UserID, regions)
 	if err != nil {
 		h.Error(r.Context(), w, "failed to get control plane list", err)
 		return
@@ -25,6 +31,7 @@ func (h Handler) ShowDashboard(w http.ResponseWriter, r *http.Request) {
 
 func (h Handler) HandleCreateControlPlaneForm(w http.ResponseWriter, r *http.Request) {
 	name := r.FormValue("name")
+	region := r.FormValue("region")
 	namespace := uuid.New().String()
 
 	user := h.MustGetUser(w, r)
@@ -39,39 +46,89 @@ func (h Handler) HandleCreateControlPlaneForm(w http.ResponseWriter, r *http.Req
 		Network: kube.Network{
 			LoadBalancerAddress: h.controlPlaneAddress(namespace),
 		},
+		Region: region,
 	}
 
-	if err := kube.ValidateControlPlane(cp); err != nil {
+	if err := h.kc.ValidateControlPlane(cp); err != nil {
 		h.Error(r.Context(), w, "failed to validate control plane", err)
 		return
 	}
 
-	h.log.Info("creating dns record", "record", h.controlPlaneAddress(namespace))
-	if err := h.dns.CreateDNSRecord(r.Context(), dns.Record{
-		Name: h.controlPlaneAddress(namespace),
-		Type: "A",
-		// TODO: this *has* to be parameterized
-		Content: "65.109.40.187",
-		TTL:     300,
-		Proxied: false,
-	}); err != nil {
-		h.Error(r.Context(), w, "failed to create dns record", err)
-		return
+	if h.c.Server.ListenHost == "localhost" {
+		h.log.Info("skipping dns record creation", "reason", "localhost")
+	} else {
+		h.log.Info("creating dns record", "record", h.controlPlaneAddress(namespace))
+		if err := h.dns.CreateDNSRecord(r.Context(), dns.Record{
+			Name: h.controlPlaneAddress(namespace),
+			Type: "A",
+			// TODO: this *has* to be parameterized
+			Content: "65.109.40.187",
+			TTL:     300,
+			Proxied: false,
+		}); err != nil {
+			h.Error(r.Context(), w, "failed to create dns record", err)
+			return
+		}
 	}
 
 	h.log.Info("creating control plane!", slog.String("name", name), slog.String("namespace", namespace))
 	if err := h.kc.CreateControlPlane(r.Context(), cp); err == nil {
+		if err := h.db.CreateControlPlane(r.Context(), &cp); err != nil {
+			h.log.Error("failed to store control plane in database", "error", err)
+			h.Error(r.Context(), w, "failed to store control plane info", err)
+			return
+		}
 		w.Header().Set("Hx-Redirect", "/controlplanes")
 		w.WriteHeader(http.StatusOK)
 	} else {
 		h.log.Error(err.Error())
 		h.Error(r.Context(), w, "failed to create control plane", err)
 	}
+}
 
+func (h Handler) DownloadKubeconfig(w http.ResponseWriter, r *http.Request) {
+	user := h.MustGetUser(w, r)
+	if user.UserID == "" {
+		return
+	}
+
+	cpID := chi.URLParam(r, "id")
+	if cpID == "" {
+		h.Error(r.Context(), w, "missing control plane id", fmt.Errorf("no id provided"))
+		return
+	}
+
+	cpUser, err := h.db.GetControlPlaneUser(r.Context(), cpID)
+	if err != nil {
+		h.Error(r.Context(), w, "failed to get control plane user", err)
+		return
+	}
+
+	if cpUser != user.UserID {
+		h.Error(r.Context(), w, "not authorized to access control plane", fmt.Errorf("unauthorized"))
+		return
+	}
+
+	cp, err := h.db.GetControlPlane(r.Context(), cpID)
+	if err != nil {
+		h.Error(r.Context(), w, "failed to get control plane region", err)
+		return
+	}
+
+	kubeconfig, err := h.kc.GetKubeconfig(r.Context(), cpID, cp.Region)
+	if err != nil {
+		h.Error(r.Context(), w, "failed to get kubeconfig", err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/x-yaml")
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s-kubeconfig.yaml", cpID))
+	w.Write([]byte(kubeconfig))
 }
 
 func (h Handler) ShowCreateControlPlaneForm(w http.ResponseWriter, r *http.Request) {
-	h.RenderOrRedirect(w, r, dashboard.CreateControlPlaneForm(), "/controlplanes")
+	regions := h.kc.GetRegions()
+	h.RenderOrRedirect(w, r, dashboard.CreateControlPlaneForm(regions), "/controlplanes")
 }
 
 func (h Handler) controlPlaneAddress(ns string) string {

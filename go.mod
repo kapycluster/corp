@@ -99,6 +99,7 @@ require (
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
 	k8s.io/component-base v0.32.0
 	k8s.io/utils v0.0.0-20241210054802-24370beab758
+	modernc.org/sqlite v1.29.10
 	sigs.k8s.io/controller-runtime v0.19.3
 )
 
@@ -324,6 +325,7 @@ require (
 	github.com/nats-io/nats.go v1.34.0 // indirect
 	github.com/nats-io/nkeys v0.4.7 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
+	github.com/ncruces/go-strftime v0.1.9 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.0 // indirect
 	github.com/opencontainers/runc v1.1.13 // indirect
@@ -353,6 +355,7 @@ require (
 	github.com/rancher/wharfie v0.6.7 // indirect
 	github.com/rancher/wrangler/v3 v3.0.0-rc2 // indirect
 	github.com/raulk/go-watchdog v1.3.0 // indirect
+	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/rootless-containers/rootlesskit v1.0.1 // indirect
 	github.com/rs/xid v1.5.0 // indirect
@@ -455,6 +458,12 @@ require (
 	k8s.io/mount-utils v0.31.4 // indirect
 	k8s.io/pod-security-admission v0.0.0 // indirect
 	lukechampine.com/blake3 v1.2.1 // indirect
+	modernc.org/gc/v3 v3.0.0-20240107210532-573471604cb6 // indirect
+	modernc.org/libc v1.49.3 // indirect
+	modernc.org/mathutil v1.6.0 // indirect
+	modernc.org/memory v1.8.0 // indirect
+	modernc.org/strutil v1.2.0 // indirect
+	modernc.org/token v1.1.0 // indirect
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.30.3 // indirect
 	sigs.k8s.io/json v0.0.0-20241014173422-cfa47c3a1cc8 // indirect
 	sigs.k8s.io/knftables v0.0.17 // indirect

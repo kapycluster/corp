@@ -3,61 +3,44 @@ package kube
 import (
 	"context"
 	"fmt"
-	"os"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/client-go/dynamic"
-	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/cache"
-	"k8s.io/client-go/tools/clientcmd"
 	kapyv1 "kapycluster.com/corp/controller/api/v1"
 	"kapycluster.com/corp/log"
 	"kapycluster.com/corp/panel/config"
+	"kapycluster.com/corp/panel/kube/kubeclient"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type Kube struct {
-	client    client.Client
-	clientset kubernetes.Interface
-	dynamic   dynamic.Interface
-	c         *config.Config
+	c  *config.Config
+	kc *kubeclient.KubeClient
 }
 
 // NewKube creates a new Kube client
-func NewKube(c *config.Config) (*Kube, error) {
+func NewKube(ctx context.Context, c *config.Config) (*Kube, error) {
 	if err := kapyv1.AddToScheme(scheme.Scheme); err != nil {
 		return nil, fmt.Errorf("failed to add ControlPlane to scheme: %w", err)
 	}
 
-	restConfig, err := clientcmd.BuildConfigFromFlags("", os.Getenv("KUBECONFIG"))
+	kc, err := kubeclient.New(c)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create rest config: %w", err)
-	}
-	dynamic, err := dynamic.NewForConfig(restConfig)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create k8s dynamic client: %w", err)
+		return nil, fmt.Errorf("failed to setup kubeclients: %w", err)
 	}
 
-	clientset, err := kubernetes.NewForConfig(restConfig)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create k8s clientset: %w", err)
-	}
-
-	client, err := client.New(restConfig, client.Options{})
-	if err != nil {
-		return nil, fmt.Errorf("failed to create k8s client: %w", err)
+	for _, r := range kc.GetRegions() {
+		log.FromContext(ctx).Info("loaded kubeclient", "region", r)
 	}
 
 	return &Kube{
-		clientset: clientset,
-		client:    client,
-		dynamic:   dynamic,
-		c:         c,
+		c:  c,
+		kc: kc,
 	}, nil
 }
 
@@ -76,10 +59,14 @@ func (k *Kube) CreateControlPlane(ctx context.Context, cp ControlPlane) error {
 		},
 	}
 
+	if k.c.Server.ListenHost == "localhost" {
+		kcp.Spec.Network.LoadBalancerAddress = "0.0.0.0"
+	}
 	kcp.Spec.Server.Image = "ghcr.io/kapycluster/kapyserver:master"
-	kcp.Spec.Server.Persistence = "sqlite"
 
-	err = k.client.Create(ctx, namespaceObj)
+	cl := k.kc.GetClient(cp.Region)
+
+	err = cl.Create(ctx, namespaceObj)
 	if err != nil {
 		return fmt.Errorf("failed to create namespace: %w", err)
 	}
@@ -95,14 +82,24 @@ func (k *Kube) CreateControlPlane(ctx context.Context, cp ControlPlane) error {
 		},
 	}
 
-	err = k.client.Create(ctx, dockerRegistrySecret)
+	err = cl.Create(ctx, dockerRegistrySecret)
 	if err != nil {
 		return fmt.Errorf("failed to create docker registry secret: %w", err)
 	}
 
-	err = k.client.Create(ctx, kcp)
+	err = cl.Create(ctx, kcp)
 	if err != nil {
-		go k.cleanup(ctx, *kcp)
+		go func() {
+			err := cl.Delete(ctx, &corev1.Namespace{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: kcp.Namespace,
+				},
+			})
+
+			if err != nil {
+				log.FromContext(ctx).Error("failed to delete namespace", "namespace", kcp.Namespace)
+			}
+		}()
 		return fmt.Errorf("failed to create ControlPlane: %w", err)
 	}
 	return nil
@@ -110,8 +107,11 @@ func (k *Kube) CreateControlPlane(ctx context.Context, cp ControlPlane) error {
 
 func (k *Kube) WatchControlPlane(ctx context.Context, cp ControlPlane) (<-chan bool, error) {
 	kcp := cp.ToKubeObject()
+
+	cls := k.kc.GetClientset(cp.Region)
+
 	watcher := cache.NewListWatchFromClient(
-		k.clientset.CoreV1().RESTClient(),
+		cls.CoreV1().RESTClient(),
 		"controlplanes",
 		kcp.Namespace,
 		fields.OneTermEqualSelector(metav1.ObjectNameField, kcp.Name),
@@ -166,7 +166,8 @@ func (k *Kube) DeleteControlPlane(ctx context.Context, cp ControlPlane) error {
 
 func (k *Kube) GetControlPlane(ctx context.Context, cp ControlPlane) (*ControlPlane, error) {
 	kcp := &kapyv1.ControlPlane{}
-	err := k.client.Get(ctx, client.ObjectKey{Namespace: cp.ID, Name: cp.Name}, kcp)
+	cl := k.kc.GetClient(cp.Region)
+	err := cl.Get(ctx, client.ObjectKey{Namespace: cp.ID, Name: cp.Name}, kcp)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get ControlPlane: %w", err)
 	}
@@ -174,37 +175,48 @@ func (k *Kube) GetControlPlane(ctx context.Context, cp ControlPlane) (*ControlPl
 	return FromKubeObject(kcp), nil
 }
 
-func (k *Kube) cleanup(ctx context.Context, cp kapyv1.ControlPlane) error {
-	err := k.client.Delete(ctx, &corev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: cp.Namespace,
-		},
-	})
+func (k *Kube) ListControlPlanes(ctx context.Context, userID string, regions []string) ([]*ControlPlane, error) {
+	cps := make([]*ControlPlane, 0)
 
-	if err != nil {
-		log.FromContext(ctx).Error("failed to delete namespace", "namespace", cp.Namespace)
+	if len(regions) == 0 {
+		regions = k.kc.GetRegions()
 	}
 
-	return nil
-}
+	for _, region := range regions {
+		listOpts := client.ListOptions{
+			LabelSelector: labels.SelectorFromSet(labels.Set{
+				labelUserID: userID,
+			}),
+		}
 
-func (k *Kube) ListControlPlanes(ctx context.Context, userID string) ([]*ControlPlane, error) {
-	listOpts := client.ListOptions{
-		LabelSelector: labels.SelectorFromSet(labels.Set{
-			labelUserID: userID,
-		}),
-	}
-	list := &kapyv1.ControlPlaneList{}
-	err := k.client.List(ctx, list, &listOpts)
-	if err != nil {
-		return nil, fmt.Errorf("failed to list ControlPlanes: %w", err)
-	}
+		list := &kapyv1.ControlPlaneList{}
+		err := k.kc.GetClient(region).List(ctx, list, &listOpts)
+		if err != nil {
+			return nil, fmt.Errorf("failed to list ControlPlanes in region %s: %w", region, err)
+		}
 
-	cps := make([]*ControlPlane, 0, len(list.Items))
+		for _, kcp := range list.Items {
+			cp := FromKubeObject(&kcp)
+			cp.Region = region
+			cps = append(cps, cp)
 
-	for _, cp := range list.Items {
-		cps = append(cps, FromKubeObject(&cp))
+			fmt.Println(cp)
+		}
 	}
 
 	return cps, nil
+}
+
+func (k *Kube) GetKubeconfig(ctx context.Context, cpID string, region string) ([]byte, error) {
+	secret := &corev1.Secret{}
+	err := k.kc.GetClient(region).Get(ctx, client.ObjectKey{Namespace: cpID, Name: "kubeconfig"}, secret)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get kubeconfig secret: %w", err)
+	}
+
+	return secret.Data["value"], nil
+}
+
+func (k *Kube) GetRegions() []string {
+	return k.kc.GetRegions()
 }

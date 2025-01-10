@@ -13,6 +13,7 @@ const (
 	ControlPlaneStatusReady       ControlPlaneStatus = "Ready"
 
 	labelUserID = "controlplanes.kapy.sh/user"
+	labelRegion = "controlplanes.kapy.sh/region"
 )
 
 type Network struct {
@@ -37,6 +38,9 @@ type ControlPlane struct {
 
 	// Network is the network configuration of the control plane
 	Network Network
+
+	// Region is the region of the control plane
+	Region string
 }
 
 // ToKubeObject converts a ControlPlane object to a kapyv1.ControlPlane object
@@ -55,12 +59,14 @@ func (cp *ControlPlane) ToKubeObject() *kapyv1.ControlPlane {
 			Namespace: cp.ID,
 			Labels: map[string]string{
 				labelUserID: cp.UserID,
+				labelRegion: cp.Region,
 			},
 		},
 		Spec: kapyv1.ControlPlaneSpec{
 			Version: cp.Version,
 			Server: kapyv1.KapyServer{
-				Token: "dummy",
+				Token:       "dummy",
+				Persistence: "sqlite:///tmp/data/kine.db?_journal=WAL&cache=shared&_busy_timeout=30000&_txlock=immediate",
 			},
 			Network: kapyv1.Network{
 				LoadBalancerAddress: cp.Network.LoadBalancerAddress,

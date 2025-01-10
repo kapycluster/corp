@@ -5,7 +5,6 @@ import (
 
 	"kapycluster.com/corp/panel/dns"
 	"kapycluster.com/corp/panel/kube"
-	"kapycluster.com/corp/panel/model"
 )
 
 type KubeClient interface {
@@ -14,11 +13,19 @@ type KubeClient interface {
 	DeleteControlPlane(ctx context.Context, cp kube.ControlPlane) error
 	WatchControlPlane(ctx context.Context, cp kube.ControlPlane) (<-chan bool, error)
 	GetControlPlane(ctx context.Context, cp kube.ControlPlane) (*kube.ControlPlane, error)
-	ListControlPlanes(ctx context.Context, userID string) ([]*kube.ControlPlane, error)
+	ListControlPlanes(ctx context.Context, userID string, regions []string) ([]*kube.ControlPlane, error)
+	GetKubeconfig(ctx context.Context, cpID string, region string) ([]byte, error)
+	ValidateControlPlane(cp kube.ControlPlane) error
+	GetRegions() []string
 }
 
 type DBStore interface {
-	CreateControlPlane(ctx context.Context, cp *model.ControlPlane) error
+	CreateControlPlane(ctx context.Context, cp *kube.ControlPlane) error
+	GetControlPlaneUser(ctx context.Context, cpID string) (string, error)
+	GetUserControlPlanes(ctx context.Context, userID string) ([]*kube.ControlPlane, error)
+	GetUserRegions(ctx context.Context, userID string) ([]string, error)
+	GetControlPlane(ctx context.Context, cpID string) (*kube.ControlPlane, error)
+	DeleteControlPlane(ctx context.Context, cpID string) error
 }
 
 type DNSClient interface {

@@ -14,15 +14,20 @@ func main() {
 	ctx := log.NewContext(context.Background(), "panel")
 	l := log.FromContext(ctx)
 
-	config := config.NewConfig()
+	c := config.NewConfig()
 
-	mux, err := handlers.Setup(ctx, config)
+	if c.Kubernetes.KubeconfigsDir == "" {
+		l.Error("kubeconfigs path is required", "key", config.AsEnv("kubernetes.kubeconfigs"))
+		return
+	}
+
+	mux, err := handlers.Setup(ctx, c)
 	if err != nil {
 		l.Error("failed to setup panel server", "error", err.Error())
 		return
 	}
 
-	listenAddr := fmt.Sprintf("%s:%d", config.Server.ListenHost, config.Server.ListenPort)
+	listenAddr := fmt.Sprintf("%s:%d", c.Server.ListenHost, c.Server.ListenPort)
 
 	l.Info("starting panel server", "address", listenAddr)
 	http.ListenAndServe(listenAddr, mux)

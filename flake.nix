@@ -118,6 +118,7 @@
       devShells = forAllSystems (system:
         let
           pkgs = nixpkgsFor.${system};
+          gcloud = pkgs.google-cloud-sdk.withExtraComponents [ pkgs.google-cloud-sdk.components.gke-gcloud-auth-plugin ];
         in
         {
           default = pkgs.mkShell {
@@ -139,6 +140,7 @@
               gcc
               nixd
               kustomize
+              gcloud
             ];
           };
         });
