@@ -15,7 +15,7 @@ module.exports = {
     },
     extend: {
       fontFamily: {
-        sans: ["Geist", "system-ui", "sans-serif", "ui-sans-serif"],
+        sans: ["Geist", "Inter", "system-ui", "sans-serif", "ui-sans-serif"],
         serif: ["Instrument Serif", "ui-serif", "serif"],
       },
       colors: {
@@ -29,14 +29,6 @@ module.exports = {
           10: "#c76262",
           20: "#b35454",
         },
-        green: "#7c9f4b",
-        yellow: "#d69822",
-        blue: {
-          0: "#6587bf",
-          20: "#516c99",
-        },
-        magenta: "#b870ce",
-        cyan: "#509c93",
       },
     },
   },

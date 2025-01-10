@@ -33,7 +33,7 @@ templ ControlPlanes(user goth.User, controlPlanes []*kube.ControlPlane) {
 				Title: "Dashboard",
 				Items: []NavItem{
 					{Icon: icons.Wheel(4), Name: "Clusters", URL: "/controlplanes", Current: true},
-					// {Icon: icons.Settings(4), Name: "Access Control", URL: "/access"},
+					{Icon: icons.Magic(4), Name: "Magic Node", URL: "/magicnode"},
 					{Icon: icons.Settings(4), Name: "Settings", URL: "/settings"},
 				},
 			},
@@ -45,28 +45,25 @@ templ ControlPlanes(user goth.User, controlPlanes []*kube.ControlPlane) {
 					<div class="p-1.5 min-w-full inline-block align-middle">
 						<div class="overflow-hidden">
 							if len(controlPlanes) > 0 {
-								<table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
+								<table class="min-w-full divide-y divide-gray-200">
 									<thead>
 										<tr>
-											<th scope="col" class="px-1 py-3 text-start text-sm font-medium text-gray-500 uppercase dark:text-neutral-500">Name</th>
-											<th scope="col" class="px-1 py-3 text-start text-sm font-medium text-gray-500 uppercase dark:text-neutral-500">Status</th>
-											<th scope="col" class="px-1 py-3 text-start text-sm font-medium text-gray-500 uppercase dark:text-neutral-500">Join URL</th>
-											<th scope="col" class="px-1 py-3 text-start text-sm font-medium text-gray-500 uppercase dark:text-neutral-500">Version</th>
+											<th scope="col" class="px-1 py-3 text-start text-sm font-medium text-gray-500 uppercase">Name</th>
+											<th scope="col" class="px-1 py-3 text-start text-sm font-medium text-gray-500 uppercase">Status</th>
+											<th scope="col" class="px-1 py-3 text-start text-sm font-medium text-gray-500 uppercase">Join URL</th>
+											<th scope="col" class="px-1 py-3 text-start text-sm font-medium text-gray-500 uppercase">Version</th>
+											<th scope="col" class="px-1 py-3 text-start text-sm font-medium text-gray-500 uppercase">Region</th>
 										</tr>
 									</thead>
-									<tbody class="divide-y divide-gray-200 dark:divide-neutral-700">
+									<tbody class="divide-y divide-gray-200">
 										for _, controlPlane := range controlPlanes {
-											<tr
-												class="hover:bg-light-0"
-											>
-												@controlPlaneRow(controlPlane)
-											</tr>
+											@controlPlaneRow(controlPlane)
 										}
 									</tbody>
 								</table>
 							} else {
 								<div class="flex flex-col items-center justify-center h-96">
-									<p class="text-lg text-gray-500 dark:text-neutral-300">
+									<p class="text-lg text-gray-400">
 										You don't have any clusters yet. Hit the 'Create' button above to get started!
 									</p>
 								</div>
@@ -79,30 +76,67 @@ templ ControlPlanes(user goth.User, controlPlanes []*kube.ControlPlane) {
 	}
 }
 
-templ controlPlaneRow(controlPlane *kube.ControlPlane) {
-	<td class="px-1 py-4 whitespace-nowrap text-lg font-medium text-gray-800 dark:text-neutral-200">
-		{ controlPlane.Name }
-	</td>
-	<td class="px-1 py-4 whitespace-nowrap text-lg font-medium text-gray-800 dark:text-neutral-200">
-		{ controlPlane.Status }
-	</td>
-	<td class="px-1 py-4 whitespace-nowrap text-lg font-medium text-gray-800 dark:text-neutral-200">
-		<span class="font-mono text-sm">{ controlPlane.ID }.kapy.sh</span>
-	</td>
-	<td class="px-1 py-4 whitespace-nowrap text-lg font-medium text-gray-800 dark:text-neutral-200">
-		{ controlPlane.Version }
-	</td>
-	<td class="px-1 py-4 whitespace-nowrap text-lg font-medium text-gray-800 dark:text-neutral-200">
-		@components.Dropdown(components.DropdownProps{
-			Items: []components.DropdownItem{
-				{Name: "Download kubeconfig", URL: fmt.Sprintf("/controlplanes/%s/edit", controlPlane.ID)},
-				{Name: "Delete", URL: fmt.Sprintf("/controlplanes/%s/delete", controlPlane.ID)},
-			},
-		})
-	</td>
+templ controlPlaneStatusDot(status string) {
+	switch status {
+		case "Creating":
+			<div class="flex items-center gap-2">
+				<span class="h-3 w-3 bg-yellow-400 rounded-full inline-block"></span>
+				<span class="text-gray-800 uppercase text-sm">Creating</span>
+			</div>
+		case "Ready":
+			<div class="flex items-center gap-2">
+				<span class="h-3 w-3 bg-green-400 rounded-full inline-block"></span>
+				<span class="text-gray-800 uppercase text-sm">Ready</span>
+			</div>
+		case "Initialized":
+			<div class="flex items-center gap-2">
+				<span class="h-3 w-3 bg-blue-400 rounded-full inline-block"></span>
+				<span class="text-gray-800 uppercase text-sm">Initialized</span>
+			</div>
+		default:
+			<div class="flex items-center gap-2">
+				<span class="h-3 w-3 bg-gray-400 rounded-full inline-block"></span>
+				<span class="text-gray-800 uppercase text-sm">Unknown</span>
+			</div>
+	}
 }
 
-templ CreateControlPlaneForm() {
+templ controlPlaneRow(controlPlane *kube.ControlPlane) {
+	<tr
+		class="hover:bg-light-0 h-20"
+	>
+		<td class="px-1 py-4 whitespace-nowrap text-lg font-medium text-gray-800">
+			{ controlPlane.Name }
+		</td>
+		<td class="px-1 py-4 whitespace-nowrap text-lg font-medium text-gray-800">
+			@controlPlaneStatusDot(controlPlane.Status)
+		</td>
+		<td class="px-1 py-4 whitespace-nowrap text-lg font-medium text-gray-800">
+			<span class="font-mono text-sm">{ controlPlane.ID }.kapy.sh</span>
+		</td>
+		<td class="px-1 py-4 whitespace-nowrap text-lg font-medium text-gray-800">
+			{ controlPlane.Version }
+		</td>
+		<td class="px-1 py-4 whitespace-nowrap text-sm font-medium text-gray-800 uppercase">
+			{ controlPlane.Region }
+		</td>
+		<td class="px-1 py-4 whitespace-nowrap text-lg font-medium text-gray-800">
+			@components.CleanButton(components.ButtonProps{
+				Icon:  icons.ArrowDown(4),
+				Text:  "Kubeconfig",
+				Class: "text-sm font-normal cursor-pointer",
+				Attrs: templ.Attributes{
+					"hx-get":  fmt.Sprintf("/controlplanes/%s/kubeconfig", controlPlane.ID),
+					"hx-swap": "none",
+				},
+			})
+			<div id="#error"></div>
+		</td>
+		<div id="#more"></div>
+	</tr>
+}
+
+templ CreateControlPlaneForm(regions []string) {
 	<header class="flex gap-2">
 		<div class="flex-grow">
 			<h1 class="mb-2">
@@ -115,9 +149,14 @@ templ CreateControlPlaneForm() {
 		</div>
 	</header>
 	<form id="create-controlplane-form" onkeydown="if(event.keyCode === 13) {event.preventDefault();}">
-		<div class="grid grid-cols-1 grid-gap-4 pt-20">
+		<div class="grid grid-cols-1 grid-gap-4 gap-4 pt-10">
 			@components.NamedInput("Name",
 				"Name of the cluster.")
+			@components.NamedDropdown(
+				"Region",
+				"Region to deploy the cluster in.",
+				regions,
+			)
 			// @components.NamedDropdown(
 			// 	"Version",
 			// 	"Version of Kubernetes to use for the cluster.",

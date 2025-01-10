@@ -62,7 +62,7 @@ func (k *Kube) CreateControlPlane(ctx context.Context, cp ControlPlane) error {
 	if k.c.Server.ListenHost == "localhost" {
 		kcp.Spec.Network.LoadBalancerAddress = "0.0.0.0"
 	}
-	kcp.Spec.Server.Image = "ghcr.io/kapycluster/kapyserver:master"
+	kcp.Spec.Server.Image = "ghcr.io/kapycluster/kapyserver@sha256:594cf0bdc606804088b1da78bcb4fb2b1869aeee56feaa31da0140f42498cb54"
 
 	cl := k.kc.GetClient(cp.Region)
 
@@ -199,8 +199,6 @@ func (k *Kube) ListControlPlanes(ctx context.Context, userID string, regions []s
 			cp := FromKubeObject(&kcp)
 			cp.Region = region
 			cps = append(cps, cp)
-
-			fmt.Println(cp)
 		}
 	}
 

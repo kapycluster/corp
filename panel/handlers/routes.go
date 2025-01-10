@@ -72,7 +72,8 @@ func Setup(ctx context.Context, config *config.Config) (*chi.Mux, error) {
 			r.Get("/", handler.ShowDashboard)
 			r.Get("/create", handler.ShowCreateControlPlaneForm)
 			r.Post("/create", handler.HandleCreateControlPlaneForm)
-			// r.Get("/controlplane/{id}", handler.FetchControlPlaneInfo)
+			r.Get("/{id}/kubeconfig", handler.DownloadKubeconfig)
+			// r.Get("/controlplane/{id}/more", handler.)
 		})
 
 		r.Route("/auth/", func(r chi.Router) {
