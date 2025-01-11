@@ -90,6 +90,9 @@ type Config struct {
 	Database DatabaseConfig `koanf:"database"`
 	// Kubernetes contains Kubernetes-specific configuration.
 	Kubernetes KubernetesConfig `koanf:"kubernetes"`
+
+	// Koanf is the underlying koanf instance.
+	Koanf *koanf.Koanf
 }
 
 func NewConfig() *Config {
@@ -106,6 +109,8 @@ func NewConfig() *Config {
 	if err := k.Unmarshal("", &cfg); err != nil {
 		log.Fatalf("error unmarshalling config: %v", err)
 	}
+
+	cfg.Koanf = k
 
 	return &cfg
 }

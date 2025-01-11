@@ -15,7 +15,7 @@ RUN ["templ", "generate"]
 
 # stage 3: build go binary
 FROM golang:1.23-alpine AS builder
-RUN apk add --no-cache git
+RUN apk add --no-cache git gcc musl-dev 
 WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
@@ -30,7 +30,7 @@ COPY --from=templ /app panel/views/
 
 RUN ls -la panel/views/auth
 RUN mkdir out
-RUN go build -o out/panel ./cmd/panel/main.go
+RUN CGO_ENABLED=1 go build -o out/panel ./cmd/panel/main.go
 
 # stage 4: final image
 FROM alpine:latest

@@ -16,25 +16,25 @@ import (
 	"kapycluster.com/corp/panel/views"
 )
 
-func Setup(ctx context.Context, config *config.Config) (*chi.Mux, error) {
+func Setup(ctx context.Context, cfg *config.Config) (*chi.Mux, error) {
 	r := chi.NewRouter()
 
-	kubeClient, err := kube.NewKube(ctx, config)
+	kubeClient, err := kube.NewKube(ctx, cfg)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create kube client: %w", err)
 	}
 
 	sessionStore := auth.NewCookieStore(
 		auth.SessionOptions{
-			CookiesKey: config.Session.Secret,
-			HttpOnly:   config.Session.HttpOnly,
-			Secure:     config.Session.Secure,
-			MaxAge:     config.Session.MaxAge,
+			CookiesKey: cfg.Session.Secret,
+			HttpOnly:   cfg.Session.HttpOnly,
+			Secure:     cfg.Session.Secure,
+			MaxAge:     cfg.Session.MaxAge,
 		},
 	)
-	auth := auth.NewAuth(config, sessionStore)
+	auth := auth.NewAuth(cfg, sessionStore)
 
-	dbStore, err := store.New(config.Database.URL)
+	dbStore, err := store.New(cfg.Database.URL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create db store: %w", err)
 	}
@@ -44,7 +44,7 @@ func Setup(ctx context.Context, config *config.Config) (*chi.Mux, error) {
 		return nil, fmt.Errorf("failed to setup db store: %w", err)
 	}
 
-	cloudflare, err := dns.NewCloudflare(config)
+	cloudflare, err := dns.NewCloudflare(cfg)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create cloudflare client: %w", err)
 	}
@@ -53,7 +53,7 @@ func Setup(ctx context.Context, config *config.Config) (*chi.Mux, error) {
 		kc:   kubeClient,
 		db:   dbStore,
 		log:  log.FromContext(ctx),
-		c:    config,
+		c:    cfg,
 		auth: auth,
 		dns:  cloudflare,
 	}
@@ -72,7 +72,8 @@ func Setup(ctx context.Context, config *config.Config) (*chi.Mux, error) {
 			r.Get("/", handler.ShowDashboard)
 			r.Get("/create", handler.ShowCreateControlPlaneForm)
 			r.Post("/create", handler.HandleCreateControlPlaneForm)
-			r.Get("/{id}/kubeconfig", handler.DownloadKubeconfig)
+			r.Get("/{id}/kubeconfig", handler.DownloadKubeconfigStub)
+			r.Get("/{id}/kubeconfig/download", handler.DownloadKubeconfig)
 			// r.Get("/controlplane/{id}/more", handler.)
 		})
 

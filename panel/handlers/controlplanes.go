@@ -86,6 +86,17 @@ func (h Handler) HandleCreateControlPlaneForm(w http.ResponseWriter, r *http.Req
 	}
 }
 
+func (h Handler) DownloadKubeconfigStub(w http.ResponseWriter, r *http.Request) {
+	cpID := chi.URLParam(r, "id")
+	if cpID == "" {
+		h.Error(r.Context(), w, "missing control plane id", fmt.Errorf("no id provided"))
+		return
+	}
+
+	w.Header().Set("Hx-Redirect", "/controlplanes/"+cpID+"/kubeconfig/download")
+	w.WriteHeader(http.StatusOK)
+}
+
 func (h Handler) DownloadKubeconfig(w http.ResponseWriter, r *http.Request) {
 	user := h.MustGetUser(w, r)
 	if user.UserID == "" {
@@ -121,9 +132,12 @@ func (h Handler) DownloadKubeconfig(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/x-yaml")
-	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s-kubeconfig.yaml", cpID))
-	w.Write([]byte(kubeconfig))
+	fmt.Println(string(kubeconfig))
+
+	w.Header().Set("Content-Type", "application/octet-stream")
+	w.Header().Set("Content-Length", fmt.Sprintf("%d", len(kubeconfig)))
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=kubeconfig-%s.yaml", cpID))
+	w.Write(kubeconfig)
 }
 
 func (h Handler) ShowCreateControlPlaneForm(w http.ResponseWriter, r *http.Request) {

@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	_ "modernc.org/sqlite"
+	_ "github.com/mattn/go-sqlite3"
 
 	"kapycluster.com/corp/panel/kube"
 )
@@ -15,9 +15,14 @@ type DB struct {
 }
 
 func New(dbPath string) (*DB, error) {
-	db, err := sql.Open("sqlite", dbPath)
+	db, err := sql.Open("sqlite3", dbPath)
 	if err != nil {
 		return nil, fmt.Errorf("opening database: %w", err)
+	}
+
+	err = db.Ping()
+	if err != nil {
+		return nil, fmt.Errorf("pinging database: %w", err)
 	}
 
 	return &DB{db}, nil

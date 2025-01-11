@@ -8,3 +8,5 @@ panel/views/static/style.css
 .envrc
 testing/
 kubeconfigs/
+panel/panel
+*.db*
