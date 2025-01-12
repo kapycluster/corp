@@ -23,6 +23,9 @@ type ServerConfig struct {
 
 	// ControlPlaneBaseURL is the base URL for the control plane.
 	ControlPlaneBaseURL string `koanf:"controlplanebaseurl"`
+
+	// LocalDev indicates if the server is running in local development mode.
+	LocalDev bool `koanf:"localdev"`
 }
 
 type GitHubConfig struct {

@@ -9,11 +9,22 @@ import (
 )
 
 func (h Handler) ShowLogin(w http.ResponseWriter, r *http.Request) {
-	_, err := h.auth.GetSessionUser(r)
-	if err == nil {
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+	invite := r.Context().Value("invite")
+
+	if invite != nil {
+		_, err := h.auth.GetSessionUser(r)
+		if err == nil {
+			http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		}
+		err = h.db.UseInvite(r.Context(), invite.(string))
+		if err != nil {
+			h.Error(r.Context(), w, "failed to use invite", err)
+			return
+		}
+		authview.Login().Render(r.Context(), w)
+	} else {
+		w.Write([]byte("you need an invite"))
 	}
-	authview.Login().Render(r.Context(), w)
 }
 
 func (h Handler) HandleProviderLogin(w http.ResponseWriter, r *http.Request) {

@@ -59,7 +59,7 @@ func (k *Kube) CreateControlPlane(ctx context.Context, cp ControlPlane) error {
 		},
 	}
 
-	if k.c.Server.ListenHost == "localhost" {
+	if k.c.Server.LocalDev {
 		kcp.Spec.Network.LoadBalancerAddress = "0.0.0.0"
 	}
 	kcp.Spec.Server.Image = "ghcr.io/kapycluster/kapyserver@sha256:594cf0bdc606804088b1da78bcb4fb2b1869aeee56feaa31da0140f42498cb54"

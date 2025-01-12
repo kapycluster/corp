@@ -5,6 +5,7 @@ import (
 
 	"kapycluster.com/corp/panel/dns"
 	"kapycluster.com/corp/panel/kube"
+	"kapycluster.com/corp/panel/model"
 )
 
 type KubeClient interface {
@@ -26,6 +27,9 @@ type DBStore interface {
 	GetUserRegions(ctx context.Context, userID string) ([]string, error)
 	GetControlPlane(ctx context.Context, cpID string) (*kube.ControlPlane, error)
 	DeleteControlPlane(ctx context.Context, cpID string) error
+
+	GetInvite(ctx context.Context, inviteID string) (*model.Invite, error)
+	UseInvite(ctx context.Context, inviteID string) error
 }
 
 type DNSClient interface {

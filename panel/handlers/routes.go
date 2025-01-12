@@ -81,7 +81,7 @@ func Setup(ctx context.Context, cfg *config.Config) (*chi.Mux, error) {
 			r.Get("/{provider}", handler.HandleProviderLogin)
 			r.Get("/{provider}/callback", handler.HandleProviderCallback)
 			r.Get("/{provider}/logout", handler.HandleLogout)
-			r.Get("/login", handler.ShowLogin)
+			r.With(middleware.ValidateInvite(dbStore)).Get("/login", handler.ShowLogin)
 		})
 
 	})

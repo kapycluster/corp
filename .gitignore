@@ -1,5 +1,6 @@
 .direnv/
 bin/*
+panel/bin
 tmp/
 result
 *_templ.go

@@ -29,6 +29,10 @@ func main() {
 
 	listenAddr := fmt.Sprintf("%s:%d", c.Server.ListenHost, c.Server.ListenPort)
 
-	l.Info("starting panel server", "address", listenAddr)
+	if c.Server.LocalDev {
+		l.Info("starting panel server", "address", listenAddr, "localdev", true)
+	} else {
+		l.Info("starting panel server", "address", listenAddr)
+	}
 	http.ListenAndServe(listenAddr, mux)
 }

@@ -54,8 +54,8 @@ func (h Handler) HandleCreateControlPlaneForm(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	if h.c.Server.ListenHost == "localhost" {
-		h.log.Info("skipping dns record creation", "reason", "localhost")
+	if h.c.Server.LocalDev {
+		h.log.Info("skipping dns record creation", "reason", "localdev")
 	} else {
 		h.log.Info("creating dns record", "record", h.controlPlaneAddress(namespace))
 		if err := h.dns.CreateDNSRecord(r.Context(), dns.Record{
@@ -131,8 +131,6 @@ func (h Handler) DownloadKubeconfig(w http.ResponseWriter, r *http.Request) {
 		h.Error(r.Context(), w, "failed to get kubeconfig", err)
 		return
 	}
-
-	fmt.Println(string(kubeconfig))
 
 	w.Header().Set("Content-Type", "application/octet-stream")
 	w.Header().Set("Content-Length", fmt.Sprintf("%d", len(kubeconfig)))
