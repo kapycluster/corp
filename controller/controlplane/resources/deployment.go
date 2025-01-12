@@ -58,13 +58,28 @@ func (d *Deployment) deployment() *appsv1.Deployment {
 				},
 				Spec: corev1.PodSpec{
 					ImagePullSecrets: []corev1.LocalObjectReference{{Name: "regcred"}},
+					Volumes: []corev1.Volume{
+						{
+							Name: "data",
+							VolumeSource: corev1.VolumeSource{
+								PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+									ClaimName: "kapyserver-storage",
+								},
+							},
+						},
+					},
 					Containers: []corev1.Container{
 						{
-							Name:  "kapyserver",
-							Image: d.scope.ServerImage(),
-							// TODO: we might want to change this!
-							ImagePullPolicy: corev1.PullAlways,
+							Name:            "kapyserver",
+							Image:           d.scope.ServerImage(),
+							ImagePullPolicy: corev1.PullIfNotPresent,
 							Command:         []string{"/kapyserver"},
+							VolumeMounts: []corev1.VolumeMount{
+								{
+									Name:      "data",
+									MountPath: "/data",
+								},
+							},
 							Env: []corev1.EnvVar{
 								{
 									Name:  types.KapyServerClusterCIDR,
@@ -76,11 +91,11 @@ func (d *Deployment) deployment() *appsv1.Deployment {
 								},
 								{
 									Name:  types.KapyServerKubeConfigPath,
-									Value: "/tmp/data/kubeconfig",
+									Value: "/data/kubeconfig",
 								},
 								{
 									Name:  types.KapyServerDataDir,
-									Value: "/tmp/data",
+									Value: "/data",
 								},
 								{
 									Name:  types.KapyServerLoadBalancerAddress,
