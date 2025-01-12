@@ -48,7 +48,7 @@ func (p *PersistentVolumeClaim) Create(ctx context.Context) error {
 	}
 
 	err := p.Client.Create(ctx, pvc)
-	if err != nil {
+	if err != client.IgnoreAlreadyExists(err) {
 		return fmt.Errorf("failed to create pvc: %w", err)
 	}
 
