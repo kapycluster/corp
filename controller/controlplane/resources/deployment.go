@@ -7,6 +7,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8stypes "k8s.io/apimachinery/pkg/types"
+	"k8s.io/utils/pointer"
 	"kapycluster.com/corp/controller/scope"
 	"kapycluster.com/corp/types"
 
@@ -58,12 +59,15 @@ func (d *Deployment) deployment() *appsv1.Deployment {
 				},
 				Spec: corev1.PodSpec{
 					ImagePullSecrets: []corev1.LocalObjectReference{{Name: "regcred"}},
+					SecurityContext: &corev1.PodSecurityContext{
+						FSGroup: pointer.Int64(65532),
+					},
 					Volumes: []corev1.Volume{
 						{
 							Name: "data",
 							VolumeSource: corev1.VolumeSource{
 								PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-									ClaimName: "kapyserver-storage",
+									ClaimName: pvcName,
 								},
 							},
 						},
