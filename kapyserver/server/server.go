@@ -59,6 +59,7 @@ func Start() error {
 		if err != nil {
 			l.Error("k3s error", "error", err)
 			errCh <- err
+			return
 		}
 	}()
 
@@ -82,6 +83,7 @@ func Start() error {
 		if err != nil {
 			l.Error("grpc error", "error", err)
 			errCh <- err
+			return
 		}
 	}()
 
