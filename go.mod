@@ -96,6 +96,7 @@ require (
 	github.com/onsi/gomega v1.35.1
 	github.com/urfave/cli v1.22.15
 	golang.org/x/exp v0.0.0-20250103183323-7d7fa50e5329
+	google.golang.org/api v0.152.0
 	google.golang.org/grpc v1.68.0
 	google.golang.org/protobuf v1.36.1
 	k8s.io/api v0.32.0
@@ -212,6 +213,9 @@ require (
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/gopacket v1.1.19 // indirect
 	github.com/google/pprof v0.0.0-20241029153458-d1b30febd7db // indirect
+	github.com/google/s2a-go v0.1.7 // indirect
+	github.com/googleapis/enterprise-certificate-proxy v0.3.2 // indirect
+	github.com/googleapis/gax-go/v2 v2.12.0 // indirect
 	github.com/gorilla/context v1.1.1 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/gorilla/securecookie v1.1.1 // indirect
