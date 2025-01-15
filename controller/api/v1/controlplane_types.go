@@ -34,10 +34,17 @@ type Network struct {
 	LoadBalancerAddress string `json:"loadBalancerAddress,omitempty"`
 }
 
+type MagicNode struct {
+	Enabled   bool   `json:"enabled"`
+	GSAEmail  string `json:"gsaEmail"`
+	ProjectID string `json:"projectID"`
+}
+
 // ControlPlaneSpec defines the desired state of ControlPlane
 type ControlPlaneSpec struct {
-	Server  KapyServer `json:"server"`
-	Network Network    `json:"network"`
+	Server    KapyServer `json:"server"`
+	Network   Network    `json:"network"`
+	MagicNode MagicNode  `json:"magicnode"`
 
 	// Version is the version of Kubernetes to deploy
 	Version string `json:"version"`

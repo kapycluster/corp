@@ -51,10 +51,53 @@ func (r *ControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Request
 
 	if !kcp.ObjectMeta.DeletionTimestamp.IsZero() {
 		// reconcile delete here
+		return ctrl.Result{}, nil
 	}
 
-	if kcp.Status.Initialized != kcp.Status.Ready {
-		l.Info("ControlPlane initialized but not ready, picking up from where we left off")
+	// If already fully reconciled, nothing to do
+	if kcp.Status.Ready {
+		l.Info("ControlPlane already reconciled", "name", scope.Name())
+		return ctrl.Result{}, nil
+	}
+
+	// Phase 1: Create resources if not created yet
+	if !kcp.Status.Initialized {
+		l.Info("creating control plane", "name", scope.Name(), "namespace", scope.Namespace())
+		if err := controlplane.Create(ctx, r.Client, scope); err != nil {
+			return ctrl.Result{}, fmt.Errorf("creation failed: %w", err)
+		}
+
+		kcp.Status.Initialized = true
+		if err := scope.UpdateStatus(ctx, &kcp); err != nil {
+			return ctrl.Result{}, fmt.Errorf("failed to update status: %w", err)
+		}
+
+		// Requeue to check deployment status
+		return ctrl.Result{RequeueAfter: 5 * time.Second}, nil
+	}
+
+	// Phase 2: Wait for kapyserver deployment to be healthy
+	kapyDeploy := &appsv1.Deployment{}
+	err = r.Get(ctx, types.NamespacedName{Name: "kapyserver", Namespace: scope.Namespace()}, kapyDeploy)
+	if errors.IsNotFound(err) {
+		l.Info("kapyserver deployment not found, requeuing...")
+		return ctrl.Result{RequeueAfter: 5 * time.Second}, nil
+	} else if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	if !isDeploymentHealthy(kapyDeploy) {
+		l.Info("kapyserver deployment is not healthy yet, requeuing...")
+		return ctrl.Result{RequeueAfter: 5 * time.Second}, nil
+	}
+
+	l.Info("kapyserver deployment is healthy")
+
+	// Phase 3: Handle gRPC requests and finish reconciliation
+	if !kcp.Status.Ready {
+		l.Info("letting kapyserver breathe a bit")
+		time.Sleep(5 * time.Second)
+
 		res, err := r.reconcileGRPCRequests(ctx, scope)
 		if err != nil {
 			return res, err
@@ -66,34 +109,18 @@ func (r *ControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		}
 	}
 
-	if kcp.Status.Ready {
-		l.Info("ControlPlane already reconciled", "name", scope.Name())
-		return ctrl.Result{}, nil
-	}
+	return ctrl.Result{}, nil
+}
 
-	l.Info("creating control plane", "name", scope.Name(), "namespace", scope.Namespace())
-	if err := controlplane.Create(ctx, r.Client, scope); err != nil {
-		return ctrl.Result{}, fmt.Errorf("creation failed: %w", err)
-	}
-
-	l.Info("checking if kapyserver is up...")
-	kapyDeploy := &appsv1.Deployment{}
-	err = r.Get(ctx, types.NamespacedName{Name: "kapyserver", Namespace: scope.Namespace()}, kapyDeploy)
-	if errors.IsNotFound(err) {
-		l.Info("kapyserver deployment not found, requeuing...")
-		return ctrl.Result{}, nil
-	} else if err != nil {
-		return ctrl.Result{}, err
-	}
-
-	if kapyDeploy.Status.Conditions == nil {
-		l.Info("kapyserver deployment conditions are not available yet...")
-		return ctrl.Result{RequeueAfter: 5 * time.Second}, nil
+// Helper function to check deployment health
+func isDeploymentHealthy(deploy *appsv1.Deployment) bool {
+	if deploy.Status.Conditions == nil {
+		return false
 	}
 
 	available := false
 	progressing := false
-	for _, condition := range kapyDeploy.Status.Conditions {
+	for _, condition := range deploy.Status.Conditions {
 		if condition.Type == appsv1.DeploymentAvailable && condition.Status == corev1.ConditionTrue {
 			available = true
 		}
@@ -102,42 +129,7 @@ func (r *ControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		}
 	}
 
-	if !(available && progressing) {
-		l.Info("kapyserver deployment is not healthy yet, requeuing...")
-		return ctrl.Result{RequeueAfter: 5 * time.Second}, nil
-	}
-
-	l.Info("kapyserver deployment is healthy")
-
-	// Re-fetch the Deployment to get the latest status
-	err = r.Get(ctx, types.NamespacedName{
-		Name:      "kapyserver",
-		Namespace: scope.Namespace(),
-	}, kapyDeploy)
-	if err != nil {
-		return ctrl.Result{}, err
-	}
-
-	kcp.Status.Initialized = true
-	err = scope.UpdateStatus(ctx, &kcp)
-	if err != nil {
-		return ctrl.Result{}, fmt.Errorf("failed to update status: %w", err)
-	}
-
-	l.Info("letting kapyserver breathe a bit")
-	time.Sleep(5 * time.Second)
-
-	res, err := r.reconcileGRPCRequests(ctx, scope)
-	if err != nil {
-		return res, err
-	}
-
-	kcp.Status.Ready = true
-	if err := scope.UpdateStatus(ctx, &kcp); err != nil {
-		return ctrl.Result{}, fmt.Errorf("failed to update status: %w", err)
-	}
-
-	return ctrl.Result{}, nil
+	return available && progressing
 }
 
 // SetupWithManager sets up the controller with the Manager.
